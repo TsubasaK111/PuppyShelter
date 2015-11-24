@@ -1,13 +1,9 @@
-import sys
-from sqlalchemy import column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Date, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
 Base = declarative_base()
-
-engine = create_engine('sqlite:///puppyshelters.db')
-Base.metadata.create_all(engine)
 
 class Shelter(Base):
     __tablename__ = 'shelter'
@@ -16,12 +12,17 @@ class Shelter(Base):
     city = Column( String(50) )
     state = Column( String(50) )
     zipCode = Column( Integer )
-    website = Column( URL )
+    website = Column( String(100) )
     id = Column(Integer, primary_key = True)
 class Puppy(Base):
     __tablename__= 'puppy'
     name = Column( String(50), nullable = False )
-    'date of birth' = Column( Date )
+    dateOfBirth = Column( Date )
     gender = Column( String(14) )
-    weight = Column( Decimal )
-    shelter_id = ( Integer, ForeignKey('shelter.id') )
+    weight = Column( Numeric(10) )
+    picture = Column(String)
+    shelter_id = Column( Integer, ForeignKey('shelter.id') )
+    id = Column( Integer, primary_key = True )
+
+engine = create_engine('sqlite:///puppyShelters.db')
+Base.metadata.create_all(engine)
