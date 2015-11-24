@@ -36,11 +36,19 @@ def youngPups():
 # 3. Query all puppies by ascending weight
 def weightedPuppies():
     """ """
+    puppies = session.query(Puppy).order_by(Puppy.weight)
+    for puppy in puppies:
+        print puppy.name
+        print puppy.weight
 
 # 4. Query all puppies grouped by the shelter in which they are staying
 def shelteredPuppies():
     """ """
-
+    puppies = session.query(Puppy).group_by(Puppy.shelter_id)
+    for puppy in puppies:
+        print puppy.name
+        print puppy.shelter_id
+        
 def runAll():
     alphabeticalPuppies()
     youngPups()
