@@ -55,3 +55,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Script-compiled databases
+*.db
+
+#wtf is this anyways? :P
+*.DS_Store
