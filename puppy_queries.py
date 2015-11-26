@@ -41,7 +41,7 @@ def weightedPuppies():
 
     print "\n Puppies in weight order:"
 
-    puppies = session.query(Puppy).order_by(Puppy.weight.asc())
+    puppies = session.query(Puppy).order_by(Puppy.weight)
     for puppy in puppies:
         print puppy.name, puppy.weight
 
