@@ -1,60 +1,74 @@
-from datetime import date
-from sqlalchemy import Date
-from sqlalchemy import func
+from sqlalchemy import text, func
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import functions
 from puppy_setup import Base, Shelter, Puppy
 
+
 engine = create_engine('sqlite:///puppyShelters.db', echo = True)
+
 
 Base.metadata.bind = engine
 DatabaseSession = sessionmaker(bind = engine)
 session = DatabaseSession()
 
-# 1. Query all of the puppies and return the results in ascending alphabetical order
+
 def alphabeticalPuppies():
-    puppies = session.query(Puppy).order_by(Puppy.name.desc())
+    """1. Query all of the puppies and return the results in ascending alphabetical order"""
+
+    print "\n Puppies in alphabetical order:"
+
+    puppies = session.query(Puppy).order_by(Puppy.name.asc())
     for puppy in puppies:
         print puppy.name
 
-    tisToday = str(date.today())
 
-
-# 2. Query all of the puppies that are less than 6 months old organized by the youngest first
 def youngPups():
-    puppies = session.query(Puppy).filter(Puppy.dateOfBirth > func.date(date.today())).order_by(Puppy.dateOfBirth.desc())
+    """2. Query all of the puppies that are less than 6 months old organized by the youngest first"""
 
-    for puppy in puppies:
-        print puppy.name
-        print puppy.dateOfBirth
+    print "\n Puppies less than 6 months old:"
 
-    # print date.today()
-    # print functions.current_date()
+    youngPuppies = session.query(Puppy).from_statement(text("""
+        SELECT * FROM Puppy
+        WHERE( julianday(dateOfBirth) > (julianday('now') -183) )
+        ORDER BY dateOfBirth
+    """))
+    for puppy in youngPuppies:
+        print puppy.name, puppy.dateOfBirth
 
 
-# 3. Query all puppies by ascending weight
 def weightedPuppies():
-    """ """
-    puppies = session.query(Puppy).order_by(Puppy.weight)
-    for puppy in puppies:
-        print puppy.name
-        print puppy.weight
+    """3. Query all puppies by ascending weight"""
 
-# 4. Query all puppies grouped by the shelter in which they are staying
-def shelteredPuppies():
-    """ """
-    puppies = session.query(Puppy).group_by(Puppy.shelter_id)
+    print "\n Puppies in weight order:"
+
+    puppies = session.query(Puppy).order_by(Puppy.weight.asc())
     for puppy in puppies:
-        print puppy.name
-        print puppy.shelter_id
-        
+        print puppy.name, puppy.weight
+
+
+def shelteredPuppies():
+    """4. Query all puppies grouped by the shelter in which they are staying"""
+
+    print "\n Puppies grouped by shelter:"
+
+    for thisShelter in session.query(Shelter).\
+                               join(Puppy).\
+                               filter(Shelter.id == Puppy.shelter_id).\
+                               group_by(Shelter.id):
+        print " \n" + str(thisShelter.name) + " :"
+        for thisPuppy in session.query(Puppy).\
+                                 filter(Puppy.shelter_id == thisShelter.id).\
+                                 order_by(Puppy.name):
+            print thisPuppy.name
+
+
 def runAll():
     alphabeticalPuppies()
     youngPups()
     weightedPuppies()
     shelteredPuppies()
     print "Success!  All queries run!"
+
 
 if __name__ == '__main__':
     runAll()
