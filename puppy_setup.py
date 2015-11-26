@@ -19,7 +19,7 @@ class Puppy(Base):
     name = Column( String(50), nullable = False )
     dateOfBirth = Column( Date )
     gender = Column( String(14) )
-    weight = Column( Numeric(10) )
+    weight = Column( String(14) )
     picture = Column(String)
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
     id = Column( Integer, primary_key = True )

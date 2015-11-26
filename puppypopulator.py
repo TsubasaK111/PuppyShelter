@@ -50,7 +50,7 @@ def CreateRandomAge():
 
 #This method will create a random weight between 1.0-40.0 pounds (or whatever unit of measure you prefer)
 def CreateRandomWeight():
-	return random.uniform(1.0, 40.0)
+	return str(random.uniform(1.0, 40.0))
 
 for i,x in enumerate(male_names):
 	new_puppy = Puppy(name = x, gender = "male", dateOfBirth = CreateRandomAge(),picture=random.choice(puppy_images), shelter_id=randint(1,5), weight= CreateRandomWeight())
