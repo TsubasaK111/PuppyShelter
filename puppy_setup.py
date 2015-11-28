@@ -1,8 +1,10 @@
-from sqlalchemy import Table, Column, ForeignKey, Integer, String, Date, Numeric
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
+from sqlalchemy.orm import relationship
 
+from sqlalchemy import (Table, Column, ForeignKey, Integer, String,
+                        Date, DateTime, DefaultClause, func)
+from sqlalchemy.sql import select
 
 Base = declarative_base()
 
@@ -12,6 +14,7 @@ association_table = Table('association', Base.metadata,
 )
 
 
+
 class Shelter(Base):
     __tablename__ = 'shelter'
     name = Column( String(50), nullable = False )
@@ -19,8 +22,14 @@ class Shelter(Base):
     city = Column( String(50) )
     state = Column( String(50) )
     zipCode = Column( Integer )
-    website = Column( String(100) )
+    website = Column( String )
+    maximum_capacity = Column( Integer )
+    current_occupancy = Column( Integer )
     id = Column(Integer, primary_key = True)
+
+
+    # def current_occupancy_counter(self):
+    # return select([func.count()]).where([association.shelter_id == self.id])
 
     # Many to many relationship with Puppy.
     # Puppies can be adopted by one person, or a family of people.
@@ -38,8 +47,16 @@ class Puppy(Base):
     dateOfBirth = Column( Date )
     gender = Column( String(14) )
     weight = Column( String(14) )
+    entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
     id = Column( Integer, primary_key = True )
+
+    def current_occupancy_counter(self):
+        shelter.update().\
+            where(shelter.id == self.shelter_id).\
+            values(shelter.current_occupancy = select([func.count(puppy.id)]).\
+                                               where(puppy.id == self.id)
+            )
 
     # One to one relationship with Puppy_Profile
     puppy_profile = relationship(
@@ -59,7 +76,6 @@ class Puppy_Profile(Base):
 
 
 engine = create_engine('sqlite:///puppyShelters.db', echo = True)
-# engine = create_engine('sqlite:///puppyShelters.db')
 
 
 Base.metadata.create_all(engine)
