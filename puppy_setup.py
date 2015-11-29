@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String,
                         Date, DateTime, DefaultClause, func)
 from sqlalchemy.sql import select
+from sqlalchemy.event import listen
+from sqlalchemy.pool import Pool
 
 Base = declarative_base()
 
@@ -13,6 +15,11 @@ association_table = Table('association', Base.metadata,
     Column('puppy_id', Integer, ForeignKey('puppy.id'))
 )
 
+
+def my_on_connect(dbapi_con, connection_record):
+    print "New DBAPI connection:", dbapi_con
+
+listen(Pool, 'connect', my_on_connect)
 
 
 class Shelter(Base):
@@ -51,12 +58,14 @@ class Puppy(Base):
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
     id = Column( Integer, primary_key = True )
 
+    current_occupancy_count = select([func.count(puppy.id)]).\
+                              where(puppy.id == self.id).\
+                              limit(1)
     def current_occupancy_counter(self):
         shelter.update().\
-            where(shelter.id == self.shelter_id).\
-            values(shelter.current_occupancy = select([func.count(puppy.id)]).\
-                                               where(puppy.id == self.id)
-            )
+        where(shelter.id == self.shelter_id).\
+        values(current_occupancy = current_occupancy_count)
+    current_occupancy_counter()
 
     # One to one relationship with Puppy_Profile
     puppy_profile = relationship(
