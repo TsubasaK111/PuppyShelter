@@ -81,3 +81,5 @@ for i,x in enumerate(female_names):
 	session.add(new_puppy)
 	session.add(new_puppy_profile)
 	session.commit()
+
+# print shelter1.current_occupancy

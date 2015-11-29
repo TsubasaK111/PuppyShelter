@@ -77,3 +77,26 @@ engine = create_engine('sqlite:///puppyShelters.db', echo = True)
 
 
 Base.metadata.create_all(engine)
+
+# def puppy_connect(dbapi_con, connection_record):
+#     print "New puppy connection:", dbapi_con
+#
+# def puppy_insert(mapper, connection, target):
+#     print "New puppy insert!"
+#     print "Mapper is:", mapper
+#     print "Connection is:", connection
+#     print "Target is:", target
+#     print "Target name is:", target.name
+#
+# listen(Puppy, 'after_insert', puppy_insert)
+
+def shelter_insert(mapper, connection, target):
+
+    print "New shelter insert!"
+    print "Mapper is:", mapper
+    print "Connection is:", connection
+    print "Target is:", target
+    print "Target name is:", target.name
+    print target.current_occupancy
+
+listen(Shelter, 'after_insert', shelter_insert)
