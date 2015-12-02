@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 from puppy_setup import Base, Shelter, Puppy, Puppy_Profile
@@ -15,6 +15,21 @@ DBSession = sessionmaker(bind=engine)
 
 session = DBSession()
 
+def receive_before_flush(session, flush_context, instances):
+	print "Session is:", session
+	print "Session.new is: ", session.new
+	# showShelter = session.execute("SELECT * FROM shelter")
+	showShelter = session.execute("SELECT shelter.current_occupancy FROM shelter")
+	print "query displays: ", showShelter
+	for eachShelter in session.shelter:
+	    session.execute(shelter.update().\
+	        values(current_occupancy = select(puppy.count()).\
+										where(puppy.shelter_id == eachShelter.id)
+			).\
+	    	where(shelter.id == eachShelter.id)
+		)
+
+event.listen(session, 'before_flush', receive_before_flush)
 
 #Add Shelters
 shelter1 = Shelter(name = "Oakland Animal Services", address = "1101 29th Ave", city = "Oakland", state = "California", zipCode = "94601", website = "oaklandanimalservices.org", maximum_capacity = "350")
