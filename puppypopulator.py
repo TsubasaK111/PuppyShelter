@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from puppy_setup import Base, Shelter, Puppy, Puppy_Profile
+
 #from flask.ext.sqlalchemy import SQLAlchemy
 from random import randint
 import datetime
