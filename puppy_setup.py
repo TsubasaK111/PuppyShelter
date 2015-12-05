@@ -70,7 +70,8 @@ class Puppy_Profile(Base):
     id = Column( Integer, primary_key = True )
 
 
-engine = create_engine('sqlite:///puppyShelters.db', echo = True)
+# engine = create_engine('sqlite:///puppyShelters.db', echo = True)
+engine = create_engine('sqlite:///puppyShelters.db')
 
 
 Base.metadata.create_all(engine)
@@ -85,29 +86,45 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-def puppy_insert(mapper, connection, targetPuppy):
+def puppy_before_insert(mapper, connection, targetPuppy):
     print "New puppy insert!"
     print "Mapper is:", mapper
     print "Connection is:", connection
     print "targetPuppy is:", targetPuppy
+
+    #Count puppies in shelter, including this puppy that will be inserted.
     shelter_count = connection.execute("""SELECT COUNT(*)
                                           FROM puppy
                                           WHERE shelter_id == ?
                                        """,
                                        (targetPuppy.shelter_id,)
-                                       ).scalar()
+                                       ).scalar() + 1
     print "shelter_count is: ", shelter_count
 
-    connection.execute("""UPDATE shelter
-                          SET current_occupancy = ?
-                          WHERE id = ?
-                       """,
-                       (shelter_count, targetPuppy.shelter_id,)
-                       )
+    #calculating remaining space
+    remaining_capacity = connection.execute("""
+            SELECT (maximum_capacity - ?) AS r
+            FROM shelter
+            WHERE id == ?
+        """,
+        (shelter_count, targetPuppy.shelter_id,)
+        ).scalar()
+    print "remaining capacity is:", remaining_capacity
 
+    if remaining_capacity < 0:
+        print "this shelter is full! Try another shelter :("
 
-# listen(Puppy, 'after_insert', puppy_insert)
+    else:
+        occupancy_update_result = connection.execute("""
+                UPDATE shelter
+                SET current_occupancy = ?
+                WHERE id = ?
+            """,
+            (shelter_count, targetPuppy.shelter_id,)
+            )
+        print targetPuppy.name, " has been put into: ", occupancy_update_result
 
+listen(Puppy, 'before_insert', puppy_before_insert)
 
 def recieve_before_flush(session, flush_context, instances):
     """listen for the 'before_flush' event"""
