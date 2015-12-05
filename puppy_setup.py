@@ -14,11 +14,31 @@ from sqlalchemy.pool import Pool
 
 Base = declarative_base()
 
-
+# Declare table for many to many relationship with Puppy_Profile
 association_table = Table('association', Base.metadata,
     Column('shelter_id', Integer, ForeignKey('shelter.id')),
     Column('puppy_id', Integer, ForeignKey('puppy.id'))
 )
+
+
+class Shelter(Base):
+    __tablename__ = 'shelter'
+    name = Column( String(50), nullable = False )
+    address = Column( String(200) )
+    city = Column( String(50) )
+    state = Column( String(50) )
+    zipCode = Column( Integer )
+    website = Column( String )
+    maximum_capacity = Column( Integer )
+    id = Column(Integer, primary_key = True)
+    current_occupancy = Column( Integer )
+
+    # Declare many to many relationship with Puppy_Profile
+    puppies = relationship(
+        "Puppy",
+        secondary = association_table,
+        backref="shelters"
+    )
 
 
 class Puppy(Base):
@@ -29,10 +49,9 @@ class Puppy(Base):
     weight = Column( String(14) )
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
-    shelter_count = Column( Integer )
     id = Column( Integer, primary_key = True )
 
-    # One to one relationship with Puppy_Profile
+    # Declare one to one relationship with Puppy_Profile
     puppy_profile = relationship(
         "Puppy_Profile",
         uselist=False,
@@ -49,24 +68,6 @@ class Puppy_Profile(Base):
     hair_length = Column( String(14) )
     number_of_tricks = Column( String(14) )
     id = Column( Integer, primary_key = True )
-
-
-class Shelter(Base):
-    __tablename__ = 'shelter'
-    name = Column( String(50), nullable = False )
-    address = Column( String(200) )
-    city = Column( String(50) )
-    state = Column( String(50) )
-    zipCode = Column( Integer )
-    website = Column( String )
-    maximum_capacity = Column( Integer )
-    id = Column(Integer, primary_key = True)
-    current_occupancy = Column( Integer )
-    puppies = relationship(
-        "Puppy",
-        secondary = association_table,
-        backref="shelters"
-    )
 
 
 engine = create_engine('sqlite:///puppyShelters.db', echo = True)
@@ -105,21 +106,21 @@ def puppy_insert(mapper, connection, targetPuppy):
                        )
 
 
-listen(Puppy, 'after_insert', puppy_insert)
+# listen(Puppy, 'after_insert', puppy_insert)
 
 
-# def recieve_before_flush(session, flush_context, instances):
-#     """listen for the 'before_flush' event"""
-#     print "Session is: ", session
-#     print "Session.new is: ", session.new
-#     showShelter = session.execute("SELECT * FROM shelter").fetchall()
-#     # session.execute(
-#     #         shelter.update().\
-#     #             values(current_occupancy = puppies_in_this_shelter(self)).\
-#     #             where(shelter.id == self.shelter_id)
-#     #
-#     #     select([func.count(Puppy.id)]).where(Puppy.id == ).limit(1)
-#     # ).fetchall()
-#     print showShelter
-#
-# listen(session, 'before_flush', recieve_before_flush)
+def recieve_before_flush(session, flush_context, instances):
+    """listen for the 'before_flush' event"""
+    print "Session is: ", session
+    print "Session.new is: ", session.new
+    showShelter = session.execute("SELECT * FROM shelter").fetchall()
+    # session.execute(
+    #         shelter.update().\
+    #             values(current_occupancy = puppies_in_this_shelter(self)).\
+    #             where(shelter.id == self.shelter_id)
+    #
+    #     select([func.count(Puppy.id)]).where(Puppy.id == ).limit(1)
+    # ).fetchall()
+    print showShelter
+
+listen(session, 'before_flush', recieve_before_flush)
