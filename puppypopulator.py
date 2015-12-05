@@ -15,22 +15,6 @@ DBSession = sessionmaker(bind=engine)
 
 session = DBSession()
 
-def receive_before_flush(session, flush_context, instances):
-	print "Session is:", session
-	print "Session.new is: ", session.new
-	# showShelter = session.execute("SELECT * FROM shelter")
-	showShelter = session.execute("SELECT shelter.current_occupancy FROM shelter")
-	print "query displays: ", showShelter
-	for eachShelter in session.shelter:
-	    session.execute(shelter.update().\
-	        values(current_occupancy = select(puppy.count()).\
-										where(puppy.shelter_id == eachShelter.id)
-			).\
-	    	where(shelter.id == eachShelter.id)
-		)
-
-event.listen(session, 'before_flush', receive_before_flush)
-
 #Add Shelters
 shelter1 = Shelter(name = "Oakland Animal Services", address = "1101 29th Ave", city = "Oakland", state = "California", zipCode = "94601", website = "oaklandanimalservices.org", maximum_capacity = "350")
 session.add(shelter1)
@@ -67,6 +51,26 @@ def CreateRandomAge():
 def CreateRandomWeight():
 	return str(random.uniform(1.0, 40.0))
 
+def CreateRandomLength():
+	return str(random.uniform(0.1, 100.0))
+
+new_dude = Puppy(
+	name = "Fat Waldi",
+	gender = "DUDE",
+	dateOfBirth = datetime.time.today(),
+	shelter_id = 3,
+	weight = 60
+)
+
+new_dude_profile = Puppy_Profile(
+	picture=random.choice(puppy_images),
+	hair_length = str(0.1),
+	number_of_tricks = str(1.5)
+)
+session.add(new_dude)
+session.add(new_dude_profile)
+session.commit()
+
 for i,x in enumerate(male_names):
 	new_puppy = Puppy(
 		name = x,
@@ -96,5 +100,3 @@ for i,x in enumerate(female_names):
 	session.add(new_puppy)
 	session.add(new_puppy_profile)
 	session.commit()
-
-# print shelter1.current_occupancy
