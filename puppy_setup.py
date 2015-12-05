@@ -47,8 +47,8 @@ class Puppy_Profile(Base):
     picture = Column(String)
     description = Column( String(500) )
     special_needs = Column( String(200) )
-    hair_length = Column( Integer )
-    number_of_tricks = Column( Integer )
+    hair_length = Column( String(14) )
+    number_of_tricks = Column( String(14) )
     id = Column( Integer, primary_key = True )
 
 

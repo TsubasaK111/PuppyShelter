@@ -57,7 +57,7 @@ def CreateRandomLength():
 new_dude = Puppy(
 	name = "Fat Waldi",
 	gender = "DUDE",
-	dateOfBirth = datetime.time.today(),
+	dateOfBirth = datetime.date.today(),
 	shelter_id = 3,
 	weight = 60
 )
