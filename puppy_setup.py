@@ -29,14 +29,9 @@ class Puppy(Base):
     weight = Column( String(14) )
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
+    shelter_count = Column( Integer )
     id = Column( Integer, primary_key = True )
 
-    def puppies_in_this_shelter(self):
-        select([func.count(Puppy.id)]).where(Puppy.id == self.id).limit(1)
-    def current_occupancy_counter(self):
-        shelter.update().\
-            values(current_occupancy = puppies_in_this_shelter(self)).\
-            where(shelter.id == self.shelter_id)
 
     # One to one relationship with Puppy_Profile
     puppy_profile = relationship(
@@ -52,6 +47,8 @@ class Puppy_Profile(Base):
     picture = Column(String)
     description = Column( String(500) )
     special_needs = Column( String(200) )
+    hair_length = Column( Integer )
+    number_of_tricks = Column( Integer )
     id = Column( Integer, primary_key = True )
 
 
@@ -66,15 +63,6 @@ class Shelter(Base):
     maximum_capacity = Column( Integer )
     id = Column(Integer, primary_key = True)
     current_occupancy = Column( Integer )
-    # current_occupancy = column_property(
-    #     select([func.count(Puppy.id)]).\
-    #     where(Puppy.shelter_id==id).\
-    #     correlate_except(Puppy)
-    # )
-
-    # Many to many relationship with Puppy.
-    # Puppies can be adopted by one person, or a family of people.
-    # Similarly, a person or family can adopt one or several puppies.
     puppies = relationship(
         "Puppy",
         secondary = association_table,
@@ -87,57 +75,52 @@ engine = create_engine('sqlite:///puppyShelters.db', echo = True)
 
 Base.metadata.create_all(engine)
 
+
 Base.metadata.bind = engine
+
 
 DBSession = sessionmaker(bind=engine)
 
+
 session = DBSession()
 
-# standard decorator style
-@event.listens_for(session, 'before_flush')
-def receive_before_flush(session, flush_context, instances):
-    """listen for the before_flush event"""
-    print "Session is: ", session
-    print "Session.new is: ", session.new
-    showShelter = session.execute("SELECT * FROM shelter")
-    print showshelter
-
-# def recieve_before_flush(session, flush_context, instances):
-#     """listen for the 'before_flush' event"""
-#     print "Session is: ", session
-#     print "Session.new is: ", session.new
-#     showShelter = session.execute("SELECT * FROM shelter")
-#     # session.execute(
-#     #         shelter.update().\
-#     #             values(current_occupancy = puppies_in_this_shelter(self)).\
-#     #             where(shelter.id == self.shelter_id)
-#     #
-#     #     select([func.count(Puppy.id)]).where(Puppy.id == ).limit(1)
-#     # )
-#     print showShelter
-#
-# listen(session, 'before_flush', recieve_before_flush)
-
-def puppy_connect(dbapi_con, connection_record):
-    print "New puppy connection:", dbapi_con
 
 def puppy_insert(mapper, connection, targetPuppy):
     print "New puppy insert!"
     print "Mapper is:", mapper
     print "Connection is:", connection
     print "targetPuppy is:", targetPuppy
-    print "targetPuppy name is:", targetPuppy.name
-    # print targetPuppy.current_occupancy_counter()
+    shelter_count = connection.execute("""SELECT COUNT(*)
+                                          FROM puppy
+                                          WHERE shelter_id == ?
+                                       """,
+                                       (targetPuppy.shelter_id,)
+                                       ).scalar()
+    print "shelter_count is: ", shelter_count
+
+    connection.execute("""UPDATE shelter
+                          SET current_occupancy = ?
+                          WHERE id = ?
+                       """,
+                       (shelter_count, targetPuppy.shelter_id,)
+                       )
+
 
 listen(Puppy, 'after_insert', puppy_insert)
 
-def shelter_insert(mapper, connection, target):
 
-    print "New shelter insert!"
-    print "Mapper is:", mapper
-    print "Connection is:", connection
-    print "Target is:", target
-    print "Target name is:", target.name
-    print target.current_occupancy
-
-listen(Shelter, 'after_insert', shelter_insert)
+# def recieve_before_flush(session, flush_context, instances):
+#     """listen for the 'before_flush' event"""
+#     print "Session is: ", session
+#     print "Session.new is: ", session.new
+#     showShelter = session.execute("SELECT * FROM shelter").fetchall()
+#     # session.execute(
+#     #         shelter.update().\
+#     #             values(current_occupancy = puppies_in_this_shelter(self)).\
+#     #             where(shelter.id == self.shelter_id)
+#     #
+#     #     select([func.count(Puppy.id)]).where(Puppy.id == ).limit(1)
+#     # ).fetchall()
+#     print showShelter
+#
+# listen(session, 'before_flush', recieve_before_flush)
