@@ -32,7 +32,6 @@ class Puppy(Base):
     shelter_count = Column( Integer )
     id = Column( Integer, primary_key = True )
 
-
     # One to one relationship with Puppy_Profile
     puppy_profile = relationship(
         "Puppy_Profile",

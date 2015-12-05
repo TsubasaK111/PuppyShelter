@@ -54,23 +54,6 @@ def CreateRandomWeight():
 def CreateRandomLength():
 	return str(random.uniform(0.1, 100.0))
 
-new_dude = Puppy(
-	name = "Fat Waldi",
-	gender = "DUDE",
-	dateOfBirth = datetime.date.today(),
-	shelter_id = 3,
-	weight = 60
-)
-
-new_dude_profile = Puppy_Profile(
-	picture=random.choice(puppy_images),
-	hair_length = str(0.1),
-	number_of_tricks = str(1.5)
-)
-session.add(new_dude)
-session.add(new_dude_profile)
-session.commit()
-
 for i,x in enumerate(male_names):
 	new_puppy = Puppy(
 		name = x,
@@ -100,3 +83,23 @@ for i,x in enumerate(female_names):
 	session.add(new_puppy)
 	session.add(new_puppy_profile)
 	session.commit()
+
+
+# Add the dude
+
+new_dude = Puppy(
+	name = "Fat Waldi",
+	gender = "DUDE",
+	dateOfBirth = datetime.date.today(),
+	shelter_id = 3,
+	weight = 60
+)
+
+new_dude_profile = Puppy_Profile(
+	picture=random.choice(puppy_images),
+	hair_length = str(0.1),
+	number_of_tricks = str(1.5)
+)
+session.add(new_dude)
+session.add(new_dude_profile)
+session.commit()
