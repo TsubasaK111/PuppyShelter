@@ -62,7 +62,6 @@ def shelteredPuppies():
             print thisPuppy.name
 
 
-
 def runAll():
     alphabeticalPuppies()
     youngPups()
