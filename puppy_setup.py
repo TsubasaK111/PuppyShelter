@@ -4,16 +4,17 @@ from sqlalchemy.orm import relationship, column_property
 
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String,
                         Date, DateTime, DefaultClause, func)
-from sqlalchemy.sql import select
+from sqlalchemy.sql import select, text
 
 from sqlalchemy import event
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.event import listen
-from sqlalchemy.pool import Pool
 
 import pprint
+import pdb
+
 
 Base = declarative_base()
+
 
 # Declare table for many to many relationship with Puppy_Profile
 association_table = Table('association', Base.metadata,
@@ -23,8 +24,6 @@ association_table = Table('association', Base.metadata,
 
 
 class Shelter(Base):
-    def __repr__(self):
-        return 'Shelter("%s","%s","%s","%s","%s","%s","%s","%s","%s","%s")' % (self.__tablename__,self.name,self.address,self.city,self.state,self.zipCode,self.website,self.maximum_capacity,self.id,self.current_occupancy)
     __tablename__ = 'shelter'
     name = Column( String(50), nullable = False )
     address = Column( String(200) )
@@ -45,8 +44,6 @@ class Shelter(Base):
 
 
 class Puppy(Base):
-    def __repr__(self):
-        return 'Puppy("%s","%s","%s","%s","%s","%s","%s","%s")' % (self.__tablename__,self.name,self.dateOfBirth,self.gender,self.weight,self.entry_date,self.shelter_id,self.id)
     __tablename__ = 'puppy'
     name = Column( String(50), nullable = False )
     dateOfBirth = Column( Date )
@@ -91,88 +88,76 @@ DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
 
-def puppy_before_insert(mapper, connection, targetPuppy):
-    print "New puppy insert!"
-    print "Mapper is:", mapper
-    print "Connection is:", connection
-    print "targetPuppy is:", targetPuppy
+puppies_on_hold = []
 
-    #Count puppies in shelter, including this puppy that will be inserted.
-    shelter_count = connection.execute("""SELECT COUNT(*)
-                                          FROM puppy
-                                          WHERE shelter_id == ?
-                                       """,
-                                       (targetPuppy.shelter_id,)
-                                       ).scalar() + 1
-    # print "shelter_count is: ", shelter_count
 
-    #calculating remaining space
-    remaining_capacity = connection.execute("""
-            SELECT (maximum_capacity - ?) AS r
-            FROM shelter
-            WHERE id == ?
-        """,
-        (shelter_count, targetPuppy.shelter_id,)
-        ).scalar()
-    # print "remaining capacity is:", remaining_capacity
+def occupancy_reporter(session,this_shelter_id):
+    print "placeholder"
 
-    if remaining_capacity < 0:
-        print "this shelter is full! Try another shelter :("
 
-    else:
-        occupancy_update_result = connection.execute("""
-                UPDATE shelter
-                SET current_occupancy = ?
-                WHERE id = ?
-            """,
-            (shelter_count, targetPuppy.shelter_id,)
-            )
-        print targetPuppy.name, " has been put into: ", occupancy_update_result
-
-listen(Puppy, 'before_insert', puppy_before_insert)
-
-def recieve_before_flush(session, flush_context, instances):
-    """listen for the 'before_flush' event"""
-    print "new flush!!\n"
+def after_attach(session, instance):
+    print "\nnew attach!!\n"
+    print "instance is: ", instance
     print "Session.new is: ", session.new
-    for newb in session.new:
-        print newb()
-        # pprint newb
-        print "pprint!:"
-        pprint.pprint(newb)
+    if instance.__tablename__ == "shelter":
+        print "it's a shelter attach!"
+        print instance
+        session.flush()
 
-        # shelter_count = session.execute("""SELECT COUNT(*)
-        #                                       FROM puppy
-        #                                       WHERE shelter_id == ?
-        #                                    """,
-        #                                    (targetPuppy.shelter_id,)
-        #                                    ).scalar() + 1
-        # # print "shelter_count is: ", shelter_count
-        #
-        # #calculating remaining space
-        # remaining_capacity = connection.execute("""
-        #         SELECT (maximum_capacity - ?) AS r
-        #         FROM shelter
-        #         WHERE id == ?
-        #     """,
-        #     (shelter_count, targetPuppy.shelter_id,)
-        #     ).scalar()
-        # # print "remaining capacity is:", remaining_capacity
-        #
-        # if remaining_capacity < 0:
-        #     print "this shelter is full! Try another shelter :("
-        #
-        # else:
-        #     occupancy_update_result = connection.execute("""
-        #             UPDATE shelter
-        #             SET current_occupancy = ?
-        #             WHERE id = ?
-        #         """,
-        #         (shelter_count, targetPuppy.shelter_id,)
-        #         )
-        #     print targetPuppy.name, " has been put into: ", occupancy_update_result
 
-    showShelter = session.execute("SELECT name FROM shelter").fetchall()
-    print "showShelter is: ", showShelter
+event.listen(session, 'after_attach', after_attach)
 
-listen(session, 'before_flush', recieve_before_flush)
+
+def before_flush(session, flush_context, instances):
+    print "\nnew flush!!\n"
+    print "Session.new is: ", session.new
+    for each in session.new:
+        print each.__tablename__
+        if each.__tablename__ == "puppy":
+
+            #extract shelter_id
+            print "each.shelter_id is: ", each.shelter_id
+
+            #calculate number of puppies in shelter if this puppy is added.
+            shelter_count_SQL = text("""
+                                SELECT COUNT(*)
+                                FROM puppy
+                                WHERE shelter_id =:shelter_id """)
+            shelter_count = session.execute(
+                    shelter_count_SQL,
+                    {"shelter_id": each.shelter_id}
+                ).scalar() + 1
+            print "shelter_count is: ", shelter_count
+
+            #calculating remaining space
+            remaining_capacity_SQL = text("""
+                                SELECT (maximum_capacity - :shelter_count) AS r
+                                FROM shelter
+                                WHERE id =:shelter_id""")
+            remaining_capacity = session.execute(
+                    remaining_capacity_SQL,
+                    {"shelter_count": shelter_count,
+                    "shelter_id": each.shelter_id}
+                ).scalar()
+            print "remaining capacity is:", remaining_capacity
+
+            if remaining_capacity < 0:
+                print "shelter is full! We're gonna have to kill yo doggie :("
+                puppies_on_hold.append(each)
+                print puppies_on_hold
+                session.expunge(each)
+                print "doggie sent to heaven!"
+                pdb.set_trace()
+            else:
+                occupancy_update_result = session.execute("""
+                        UPDATE shelter
+                        SET current_occupancy = :shelter_count
+                        WHERE id = :shelter_id
+                    """,
+                    {"shelter_count": shelter_count, "shelter_id": each.shelter_id}
+                    )
+                print each.name, " has been put into: ", occupancy_update_result
+                print "shelter_count updated!"
+
+
+event.listen(session, 'before_flush', before_flush)
