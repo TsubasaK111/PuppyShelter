@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import relationship, column_property
 
 from sqlalchemy import (Table, Column, ForeignKey, Integer, String,
-                        Date, DateTime, DefaultClause, func)
+                        Boolean, Date, DateTime, DefaultClause, func)
 from sqlalchemy.sql import select, text
 
 from sqlalchemy import event
@@ -51,6 +51,7 @@ class Puppy(Base):
     weight = Column( String(14) )
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
+    adopted = Column( Boolean, default=False )
     id = Column( Integer, primary_key = True )
 
     # Declare one to one relationship with Puppy_Profile
@@ -91,9 +92,33 @@ session = DBSession()
 puppies_on_hold = []
 
 
-def occupancy_reporter(session,this_shelter_id):
-    print "placeholder"
+#calculate number of puppies in shelter if this puppy is added.
+def occupancy_counter(session, this_shelter_id):
+    shelter_count_SQL = text("""
+                        SELECT COUNT(*)
+                        FROM puppy
+                        WHERE shelter_id =:this_shelter_id AND adopted=0
+                        """)
+    shelter_count = session.execute(
+            shelter_count_SQL,
+            {"this_shelter_id": this_shelter_id}
+        ).scalar() + 1
+    print "shelter_count is: ", shelter_count
+    return shelter_count
 
+def capacity_counter(session, this_shelter_id):
+    current_occupancy = occupancy_counter(session, this_shelter_id)
+    remaining_capacity_SQL = text("""
+                        SELECT (maximum_capacity - :current_occupancy) AS r
+                        FROM shelter
+                        WHERE id =:shelter_id""")
+    remaining_capacity = session.execute(
+            remaining_capacity_SQL,
+            {"current_occupancy": current_occupancy,
+            "shelter_id": this_shelter_id}
+        ).scalar()
+    print "remaining capacity is:", remaining_capacity
+    return remaining_capacity, current_occupancy
 
 def after_attach(session, instance):
     print "\nnew attach!!\n"
@@ -115,34 +140,10 @@ def before_flush(session, flush_context, instances):
         print each.__tablename__
         if each.__tablename__ == "puppy":
 
-            #extract shelter_id
             print "each.shelter_id is: ", each.shelter_id
-
-            #calculate number of puppies in shelter if this puppy is added.
-            shelter_count_SQL = text("""
-                                SELECT COUNT(*)
-                                FROM puppy
-                                WHERE shelter_id =:shelter_id """)
-            shelter_count = session.execute(
-                    shelter_count_SQL,
-                    {"shelter_id": each.shelter_id}
-                ).scalar() + 1
-            print "shelter_count is: ", shelter_count
-
-            #calculating remaining space
-            remaining_capacity_SQL = text("""
-                                SELECT (maximum_capacity - :shelter_count) AS r
-                                FROM shelter
-                                WHERE id =:shelter_id""")
-            remaining_capacity = session.execute(
-                    remaining_capacity_SQL,
-                    {"shelter_count": shelter_count,
-                    "shelter_id": each.shelter_id}
-                ).scalar()
-            print "remaining capacity is:", remaining_capacity
+            remaining_capacity, current_occupancy = capacity_counter(session, each.shelter_id)
 
             if remaining_capacity < 0:
-                print "shelter is full! We're gonna have to kill yo doggie :("
                 puppies_on_hold.append(each)
                 print puppies_on_hold
                 session.expunge(each)
@@ -151,13 +152,14 @@ def before_flush(session, flush_context, instances):
             else:
                 occupancy_update_result = session.execute("""
                         UPDATE shelter
-                        SET current_occupancy = :shelter_count
+                        SET current_occupancy = :current_occupancy
                         WHERE id = :shelter_id
                     """,
-                    {"shelter_count": shelter_count, "shelter_id": each.shelter_id}
+                    {"current_occupancy": current_occupancy,
+                    "shelter_id": each.shelter_id}
                     )
+                print "current_occupancy updated!"
                 print each.name, " has been put into: ", occupancy_update_result
-                print "shelter_count updated!"
 
 
 event.listen(session, 'before_flush', before_flush)
