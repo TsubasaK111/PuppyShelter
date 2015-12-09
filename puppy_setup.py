@@ -61,6 +61,9 @@ class Puppy(Base):
         backref="puppy"
     )
 
+    # Declare one to many relationship with Adopter
+    adopter = relationship( "Adopter" )
+
 
 class Puppy_Profile(Base):
     __tablename__ = 'puppy_profile'
@@ -72,6 +75,13 @@ class Puppy_Profile(Base):
     number_of_tricks = Column( String(14) )
     id = Column( Integer, primary_key = True )
 
+class Adopter(Base):
+    __tablename__ = 'adopter'
+    puppy_id = Column( Integer, ForeignKey('puppy.id') )
+    name = Column( String(50), nullable = False )
+    id = Column ( Integer, primary_key = True )
+    entry_date = Column( DateTime, default=func.now() )
+    adoption_date = Column( Date )
 
 # engine = create_engine('sqlite:///puppyShelters.db', echo = True)
 engine = create_engine('sqlite:///puppyShelters.db')
@@ -92,7 +102,7 @@ session = DBSession()
 puppies_on_hold = []
 
 
-#calculate number of puppies in shelter if this puppy is added.
+#calculate number of puppies in shelter.
 def occupancy_counter(session, this_shelter_id):
     shelter_count_SQL = text("""
                         SELECT COUNT(*)
@@ -102,7 +112,7 @@ def occupancy_counter(session, this_shelter_id):
     shelter_count = session.execute(
             shelter_count_SQL,
             {"this_shelter_id": this_shelter_id}
-        ).scalar() + 1
+        ).scalar()
     print "shelter_count is: ", shelter_count
     return shelter_count
 
@@ -119,6 +129,38 @@ def capacity_counter(session, this_shelter_id):
         ).scalar()
     print "remaining capacity is:", remaining_capacity
     return remaining_capacity, current_occupancy
+
+def load_balancer(session, this_puppy_id):
+    remaining_capacity_list = []
+    shelters = session.query(Shelter).order_by(Shelter.id.asc())
+    for shelter in shelters:
+        remaining_capacity, ignore = capacity_counter(session, shelter.id)
+        remaining_capacity_list.append(remaining_capacity)
+    print remaining_capacity_list
+    print remaining_capacity_list.index(max(remaining_capacity_list))
+
+def adopt_puppy(session, this_puppy_id, adopters):
+    update_puppy_SQL = text("""
+                        UPDATE puppy
+                        SET adopted = 1
+                        WHERE id = :this_puppy_id""")
+    update_puppy_result = session.execute(
+                                      update_puppy_SQL,
+                                      {"this_puppy_id": this_puppy_id}
+                                      )
+    print "update_puppy_result: ", update_puppy_result
+    for adopter in adopters:
+        update_adopter_SQL = text("""
+            UPDATE adopter
+            SET puppy_id = :this_puppy_id
+            WHERE id = :adopter_id
+        """)
+        update_adopter_result = session.execute(
+                                                update_adopter_SQL,
+                                                {"this_puppy_id": this_puppy_id,
+                                                "adopter_id": adopter.id}
+                                               )
+        print "update_adopter_result: ", update_adopter_result
 
 def after_attach(session, instance):
     print "\nnew attach!!\n"
@@ -141,9 +183,11 @@ def before_flush(session, flush_context, instances):
         if each.__tablename__ == "puppy":
 
             print "each.shelter_id is: ", each.shelter_id
-            remaining_capacity, current_occupancy = capacity_counter(session, each.shelter_id)
+            remaining_capacity, current_occupancy = capacity_counter(
+                                                            session,
+                                                            each.shelter_id)
 
-            if remaining_capacity < 0:
+            if remaining_capacity - 1 < 0:
                 puppies_on_hold.append(each)
                 print puppies_on_hold
                 session.expunge(each)
