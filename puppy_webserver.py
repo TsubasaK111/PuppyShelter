@@ -33,10 +33,9 @@ def index():
 
 @app.route('/shelters/<int:shelter_id>/')
 def sheltered_puppies(shelter_id):
-    shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-    print "\nsheltered_puppies triggered: ", shelter
-    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
     output = render_template('page_head.html', title = "The Shelter Manager")
+    shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
     output += render_template( 'puppy_roster.html',
                                shelter=shelter,
                                puppies=puppies )
@@ -46,27 +45,26 @@ def sheltered_puppies(shelter_id):
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
     """page to create a new menu item."""
-    return "new_puppy!"
-#
-#     if request.method == "POST":
-#         new_name = request.form['new_name']
-#         print "\nnewMenuItem POST triggered, name is: ", new_name
-#         restaurant = session.query(Restaurant).filter_by(id = restaurant_id).first()
-#         newMenuItem = MenuItem( name=new_name,
-#                                 restaurant_id=restaurant.id )
-#         session.add(newMenuItem)
-#         session.commit()
-#         flash( "new item '" + new_name + "' created!")
-#         print "POST worked!"
-#         return redirect(url_for("restaurantMenu", restaurant_id=restaurant.id))
-#
-#     else:
-#         restaurant = session.query(Restaurant).filter_by(id = restaurant_id).first()
-#         output = render_template('page_head.html', title = "The Menu Manager")
-#         output += render_template('newMenuItem.html', restaurant = restaurant)
-#         return output
-#
-#
+
+    if request.method == "POST":
+        new_name = request.form['new_name']
+        print "\nnew_puppy POST triggered, name is: ", new_name
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        new_puppy = Puppy( name=new_name,
+                                shelter_id=shelter.id )
+        session.add(new_puppy)
+        session.commit()
+        flash( "new puppy '" + new_name + "' added!")
+        print "POST worked!"
+        return redirect(url_for("sheltered_puppies", shelter_id=shelter.id))
+
+    else:
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        output = render_template('page_head.html', title = "Add a New Puppy! :D")
+        output += render_template('new_puppy.html', shelter = shelter)
+        return output
+
+
 @app.route('/shelters/<int:shelter_id>/<int:puppy_id>/edit/', methods=['GET', 'POST'])
 def edit_puppy(shelter_id, puppy_id):
     """page to edit a menu item."""
