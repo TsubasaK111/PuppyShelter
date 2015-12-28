@@ -1,0 +1,37 @@
+<h1>California State Puppy Shelter Directory</h1>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li><strong>{{ message }} </strong></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h3>
+  Add a <a href={{ url_for('new_shelter') }}>New</a> Shelter
+</h3>
+
+{% for shelter in shelters %}
+
+  <h1>
+    <a href={{ url_for('show_puppies', shelter_id=shelter.id }}>{{shelter.name}}</a>
+  </h1>
+
+  <ul>
+    <li>{{shelter.address}}</li>
+    <li>{{shelter.city}}, {{shelter.state}}</li>
+    <li>{{shelter.zipCode}} USA</li>
+    <li><a href={{shelter.website}}>{{shelter.website}}</a></li>
+  </ul>
+
+  <a href={{ url_for('edit_shelter', shelter_id=shelter.id) }}>edit</a>
+  <a href={{ url_for('delete_shelter', shelter_id=shelter.id) }}>delete</a>
+
+{% endfor %}
+
+</body>
+
+</html>

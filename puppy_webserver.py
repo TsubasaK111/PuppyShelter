@@ -19,24 +19,19 @@ session = DatabaseSession()
 
 
 @app.route('/shelters/')
-def index():
+def show_shelters():
     output = render_template('page_head.html', title = "The County Shelter Manager")
     shelters = session.query(Shelter).all()
-    for shelter in shelters:
-        puppies = session.query(Puppy).filter_by(shelter_id = shelter.id)
-        output += render_template( 'puppy_roster.html',
-                                   shelter=shelter,
-                                   puppies=puppies )
-        output += "<br><br>BREAKBREAKBREAK<br><br>"
+    output += render_template('show_shelters.html', shelters=shelters)
     return output
 
 
 @app.route('/shelters/<int:shelter_id>/')
-def sheltered_puppies(shelter_id):
+def show_puppies(shelter_id):
     output = render_template('page_head.html', title = "The Shelter Manager")
     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
-    output += render_template( 'puppy_roster.html',
+    output += render_template( 'show_puppies.html',
                                shelter=shelter,
                                puppies=puppies )
     return output
@@ -48,15 +43,13 @@ def new_puppy(shelter_id):
 
     if request.method == "POST":
         new_name = request.form['new_name']
-        print "\nnew_puppy POST triggered, name is: ", new_name
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         new_puppy = Puppy( name=new_name,
                                 shelter_id=shelter.id )
         session.add(new_puppy)
         session.commit()
         flash( "new puppy '" + new_name + "' added!")
-        print "POST worked!"
-        return redirect(url_for("sheltered_puppies", shelter_id=shelter.id))
+        return redirect(url_for("show_puppies", shelter_id=shelter.id))
 
     else:
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
@@ -71,7 +64,6 @@ def edit_puppy(shelter_id, puppy_id):
     # return "edit_puppy!"
     if request.method == "POST":
         edited_name = request.form['edited_name']
-        print "\nedit_puppy POST triggered, name is: ", edited_name
         old_name = session.query(Puppy).filter_by(id = puppy_id).first().name
 
         result = session.execute("""
@@ -84,11 +76,10 @@ def edit_puppy(shelter_id, puppy_id):
         )
         session.commit()
         flash( "item '" +  old_name + "' edited to '" + edited_name + "'. Jawohl!")
-        return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
+        return redirect(url_for("show_puppies", shelter_id=shelter_id))
 
     else:
         output = render_template('page_head.html', title = "The Menu Manager")
-        print "\nshelters/shelter_id/puppy_id/edit accessed..."
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
         output += render_template('edit_puppy.html',
@@ -102,15 +93,13 @@ def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
     # return "delete_puppy!"
     if request.method == "POST":
-        print "\ndelete_puppy POST triggered!, puppy_id is: ", puppy_id
         deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
         session.delete(deletedMenuItem)
         session.commit()
         flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
-        return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
+        return redirect(url_for("show_puppies", shelter_id=shelter_id))
 
     else:
-        print "shelters/delete accessed..."
         output = render_template('page_head.html', title = "The Menu Manager")
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
@@ -120,7 +109,7 @@ def delete_puppy(shelter_id, puppy_id):
         return output
 
 
-# #Another attempt at an API endpoint (GET Req)
+# #Attempt at an API endpoint (GET Req)
 # @app.route('/shelters/<int:shelter_id>/menu/<int:puppy_id>/JSON/')
 # def puppyJSON(shelter_id, puppy_id):
 #     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
@@ -128,9 +117,9 @@ def delete_puppy(shelter_id, puppy_id):
 #     return jsonify(Puppy = puppy.serialize)
 #
 #
-# #A first attempt at an API endpoint (GET Req)
+# #Attempt at an API endpoint (GET Req)
 # @app.route('/shelters/<int:shelter_id>/menu/JSON/')
-# def sheltered_puppies_JSON(shelter_id):
+# def show_puppies_JSON(shelter_id):
 #     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
 #     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id).all()
 #     return jsonify(Puppies = [puppy.serialize for puppy in puppies])

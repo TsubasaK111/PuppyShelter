@@ -1,10 +1,4 @@
 <h1>{{shelter.name}}</h1>
-<ul>
-  <li>{{shelter.address}}</li>
-  <li>{{shelter.city}}, {{shelter.state}}</li>
-  <li>{{shelter.zipCode}} USA</li>
-  <li><a href={{shelter.website}}>{{shelter.website}}</a></li>
-</ul>
 
 {% with messages = get_flashed_messages() %}
   {% if messages %}
@@ -17,7 +11,7 @@
 {% endwith %}
 
 <h3>
-  <p>Add a <a href={{ url_for('new_puppy', shelter_id=shelter.id) }}>New</a> Puppy!</p>
+  Add a <a href={{ url_for('new_puppy', shelter_id=shelter.id) }}>New</a> Puppy!
 </h3>
 
 {% for puppy in puppies %}
