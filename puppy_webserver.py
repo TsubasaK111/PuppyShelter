@@ -67,34 +67,34 @@ def new_puppy(shelter_id):
 
 @app.route('/shelters/<int:shelter_id>/<int:puppy_id>/edit/', methods=['GET', 'POST'])
 def edit_puppy(shelter_id, puppy_id):
-    """page to edit a menu item."""
-    return "edit_puppy!"
-#     if request.method == "POST":
-#         edited_name = request.form['edited_name']
-#         print "\neditMenuItem POST triggered, name is: ", edited_name
-#         old_name = session.query(MenuItem).filter_by(id = menu_id).first().name
-#
-#         result = session.execute("""
-#                 UPDATE menu_item
-#                 SET name=:edited_name
-#                 WHERE id=:edited_menu_item_id;
-#             """,
-#             {"edited_name": edited_name,
-#             "edited_menu_item_id": menu_id}
-#         )
-#         session.commit()
-#         flash( "item '" +  old_name + "' edited to '" + edited_name + "'. Jawohl!")
-#         return redirect(url_for("restaurantMenu", restaurant_id=restaurant_id))
-#
-#     else:
-#         output = render_template('page_head.html', title = "The Menu Manager")
-#         print "\nrestaurants/restaurant_id/menu_id/edit accessed..."
-#         restaurant = session.query(Restaurant).filter_by(id = restaurant_id).first()
-#         menuItem = session.query(MenuItem).filter_by(id = menu_id).first()
-#         output += render_template('editMenuItem.html',
-#                                   restaurant = restaurant,
-#                                   menuItem = menuItem )
-#         return output
+    """page to edit a puppy's basic information."""
+    # return "edit_puppy!"
+    if request.method == "POST":
+        edited_name = request.form['edited_name']
+        print "\nedit_puppy POST triggered, name is: ", edited_name
+        old_name = session.query(Puppy).filter_by(id = puppy_id).first().name
+
+        result = session.execute("""
+                UPDATE puppy
+                SET name=:edited_name
+                WHERE id=:edited_puppy_id;
+            """,
+            {"edited_name": edited_name,
+            "edited_puppy_id": puppy_id}
+        )
+        session.commit()
+        flash( "item '" +  old_name + "' edited to '" + edited_name + "'. Jawohl!")
+        return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
+
+    else:
+        output = render_template('page_head.html', title = "The Menu Manager")
+        print "\nshelters/shelter_id/puppy_id/edit accessed..."
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        puppy = session.query(Puppy).filter_by(id = puppy_id).first()
+        output += render_template('edit_puppy.html',
+                                  shelter = shelter,
+                                  puppy = puppy )
+        return output
 
 
 @app.route('/shelters/<int:shelter_id>/<int:puppy_id>/delete/', methods=["GET","POST"])
@@ -102,38 +102,38 @@ def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
     return "delete_puppy!"
 #     if request.method == "POST":
-#         print "\ndeleteMenuItem POST triggered!, menu_id is: ", menu_id
-#         deletedMenuItem = session.query(MenuItem).filter_by(id = menu_id).first()
+#         print "\ndeleteMenuItem POST triggered!, puppy_id is: ", puppy_id
+#         deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
 #         session.delete(deletedMenuItem)
 #         session.commit()
 #         flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
-#         return redirect(url_for("restaurantMenu", restaurant_id=restaurant_id))
+#         return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
 #
 #     else:
-#         print "restaurants/delete accessed..."
+#         print "shelters/delete accessed..."
 #         output = render_template('page_head.html', title = "The Menu Manager")
-#         restaurant = session.query(Restaurant).filter_by(id = restaurant_id).first()
-#         menuItem = session.query(MenuItem).filter_by(id = menu_id).first()
+#         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+#         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
 #         output += render_template( 'deleteMenuItem.html',
-#                                    menuItem = menuItem,
-#                                    restaurant = restaurant )
+#                                    puppy = puppy,
+#                                    shelter = shelter )
 #         return output
 
 
 # #Another attempt at an API endpoint (GET Req)
-# @app.route('/restaurants/<int:restaurant_id>/menu/<int:menu_id>/JSON/')
-# def menuItemJSON(restaurant_id, menu_id):
-#     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
-#     menuItem = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).filter_by(id = menu_id).one()
-#     return jsonify(MenuItem = menuItem.serialize)
+# @app.route('/shelters/<int:shelter_id>/menu/<int:puppy_id>/JSON/')
+# def puppyJSON(shelter_id, puppy_id):
+#     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
+#     puppy = session.query(Puppy).filter_by(shelter_id = shelter_id).filter_by(id = puppy_id).one()
+#     return jsonify(Puppy = puppy.serialize)
 #
 #
 # #A first attempt at an API endpoint (GET Req)
-# @app.route('/restaurants/<int:restaurant_id>/menu/JSON/')
-# def restaurantMenuJSON(restaurant_id):
-#     restaurant = session.query(Restaurant).filter_by(id = restaurant_id).one()
-#     menuItems = session.query(MenuItem).filter_by(restaurant_id = restaurant_id).all()
-#     return jsonify(MenuItems = [menuItem.serialize for menuItem in menuItems])
+# @app.route('/shelters/<int:shelter_id>/menu/JSON/')
+# def sheltered_puppies_JSON(shelter_id):
+#     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
+#     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id).all()
+#     return jsonify(Puppies = [puppy.serialize for puppy in puppies])
 
 
 if __name__ == "__main__":
