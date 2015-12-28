@@ -100,24 +100,24 @@ def edit_puppy(shelter_id, puppy_id):
 @app.route('/shelters/<int:shelter_id>/<int:puppy_id>/delete/', methods=["GET","POST"])
 def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
-    return "delete_puppy!"
-#     if request.method == "POST":
-#         print "\ndeleteMenuItem POST triggered!, puppy_id is: ", puppy_id
-#         deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
-#         session.delete(deletedMenuItem)
-#         session.commit()
-#         flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
-#         return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
-#
-#     else:
-#         print "shelters/delete accessed..."
-#         output = render_template('page_head.html', title = "The Menu Manager")
-#         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-#         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
-#         output += render_template( 'deleteMenuItem.html',
-#                                    puppy = puppy,
-#                                    shelter = shelter )
-#         return output
+    # return "delete_puppy!"
+    if request.method == "POST":
+        print "\ndelete_puppy POST triggered!, puppy_id is: ", puppy_id
+        deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
+        session.delete(deletedMenuItem)
+        session.commit()
+        flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
+        return redirect(url_for("sheltered_puppies", shelter_id=shelter_id))
+
+    else:
+        print "shelters/delete accessed..."
+        output = render_template('page_head.html', title = "The Menu Manager")
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        puppy = session.query(Puppy).filter_by(id = puppy_id).first()
+        output += render_template( 'delete_puppy.html',
+                                   puppy = puppy,
+                                   shelter = shelter )
+        return output
 
 
 # #Another attempt at an API endpoint (GET Req)
