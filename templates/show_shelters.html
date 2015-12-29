@@ -25,6 +25,8 @@
     <li>{{shelter.city}}, {{shelter.state}}</li>
     <li>{{shelter.zipCode}} USA</li>
     <li><a href={{shelter.website}}>{{shelter.website}}</a></li>
+    <li><b>{{shelter.current_occupancy}}</b> sheltered /
+      <b>{{shelter.maximum_capacity}}</b> max capacity</li>
   </ul>
 
   <a href={{ url_for('edit_shelter', shelter_id=shelter.id) }}>edit</a>

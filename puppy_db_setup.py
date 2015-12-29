@@ -16,7 +16,7 @@ import pdb
 Base = declarative_base()
 
 
-# Declare table for many to many relationship with Puppy_Profile
+# Table for many to many relationship with Puppy_Profile
 association_table = Table('association', Base.metadata,
     Column('shelter_id', Integer, ForeignKey('shelter.id')),
     Column('puppy_id', Integer, ForeignKey('puppy.id'))
@@ -35,7 +35,7 @@ class Shelter(Base):
     id = Column(Integer, primary_key = True)
     current_occupancy = Column( Integer )
 
-    # Declare many to many relationship with Puppy_Profile
+    # Many to many relationship with Puppy
     puppies = relationship(
         "Puppy",
         secondary = association_table,
@@ -51,17 +51,18 @@ class Puppy(Base):
     weight = Column( String(14) )
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
+    adopter_id = Column( Interger, ForeignKey('adopter.id') )
     adopted = Column( Boolean, default=False )
     id = Column( Integer, primary_key = True )
 
-    # Declare one to one relationship with Puppy_Profile
+    # One to one relationship with Puppy_Profile
     puppy_profile = relationship(
         "Puppy_Profile",
         uselist=False,
         backref="puppy"
     )
 
-    # Declare one to many relationship with Adopter
+    # Declare many to one relationship with Adopter
     adopter = relationship( "Adopter" )
 
 
@@ -79,9 +80,13 @@ class Adopter(Base):
     __tablename__ = 'adopter'
     puppy_id = Column( Integer, ForeignKey('puppy.id') )
     name = Column( String(50), nullable = False )
-    id = Column ( Integer, primary_key = True )
+    address = Column( String(200) )
+    city = Column( String(50) )
+    state = Column( String(50) )
+    zipCode = Column( Integer )
     entry_date = Column( DateTime, default=func.now() )
     adoption_date = Column( Date )
+    id = Column ( Integer, primary_key = True )
 
 # engine = create_engine('sqlite:///puppyShelters.db', echo = True)
 engine = create_engine('sqlite:///puppyShelters.db')
@@ -131,6 +136,7 @@ def capacity_counter(session, this_shelter_id):
     return remaining_capacity, current_occupancy
 
 def load_balancer(session, this_puppy_id):
+    #TODO: Force load balancing
     remaining_capacity_list = []
     shelters = session.query(Shelter).order_by(Shelter.id.asc())
     for shelter in shelters:
@@ -187,7 +193,7 @@ def before_flush(session, flush_context, instances):
                                                             each.shelter_id)
             if remaining_capacity - 1 < 0:
                 puppies_on_hold.append(each)
-                print puppies_on_hold
+                print "puppies_on_hold: ", puppies_on_hold
                 session.expunge(each)
                 print "doggie sent to heaven!"
                 pdb.set_trace()

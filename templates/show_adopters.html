@@ -1,0 +1,36 @@
+<h1>California State Puppy Adopter Directory</h1>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li><strong>{{ message }} </strong></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+<h3>
+  Add a <a href={{ url_for('new_adopter') }}>New</a> Adopter
+</h3>
+
+{% for adopter in adopters %}
+
+  <h1>
+    <a href={{ url_for('show_puppies_by_adopter', adopter_id=adopter.id) }}>{{adopter.name}}</a>
+  </h1>
+
+  <ul>
+    <li>{{adopter.address}}</li>
+    <li>{{adopter.city}}, {{adopter.state}}</li>
+    <li>{{adopter.zipCode}} USA</li>
+  </ul>
+
+  <a href={{ url_for('edit_adopter', adopter_id=adopter.id) }}>edit</a>
+  <a href={{ url_for('delete_adopter', adopter_id=adopter.id) }}>delete</a>
+
+{% endfor %}
+
+</body>
+
+</html>

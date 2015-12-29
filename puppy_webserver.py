@@ -32,7 +32,6 @@ def show_shelters():
 @app.route('/shelters/new/', methods=['GET', 'POST'])
 def new_shelter():
     """page to create a new menu item."""
-
     if request.method == "POST":
         new_name = request.form['new_name']
         new_shelter = Shelter( name=new_name )
@@ -51,7 +50,6 @@ def new_shelter():
 @app.route('/shelters/<int:shelter_id>/edit/', methods=['GET', 'POST'])
 def edit_shelter(shelter_id):
     """page to edit a shelter's basic information."""
-    # return "edit_shelter!"
     if request.method == "POST":
         edited_name = request.form['edited_name']
         old_name = session.query(Shelter).filter_by(id=shelter_id).first().name
@@ -77,7 +75,6 @@ def edit_shelter(shelter_id):
 @app.route('/shelters/<int:shelter_id>/delete/', methods=["GET","POST"])
 def delete_shelter(shelter_id):
     """page to delete a puppy."""
-    # return "delete_shelter!"
     if request.method == "POST":
         delete_this_shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         session.delete(delete_this_shelter)
@@ -98,7 +95,7 @@ def delete_shelter(shelter_id):
 
 @app.route('/shelters/<int:shelter_id>/')
 def show_puppies(shelter_id):
-    output = render_template('page_head.html', title = "The Shelter Manager")
+    output = render_template('page_head.html', title = "The Puppy Manager")
     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
     output += render_template( 'show_puppies.html',
@@ -106,6 +103,15 @@ def show_puppies(shelter_id):
                                puppies=puppies )
     return output
 
+@app.route('/adopters/<int:adopter_id>/')
+def show_puppies(adopter_id):
+    output = render_template('page_head.html', title = "The Puppy Manager")
+    shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
+    output += render_template( 'show_puppies.html',
+                               shelter=shelter,
+                               puppies=puppies )
+    return output
 
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
@@ -179,20 +185,90 @@ def delete_puppy(shelter_id, puppy_id):
         return output
 
 
-# #Attempt at an API endpoint (GET Req)
-# @app.route('/shelters/<int:shelter_id>/menu/<int:puppy_id>/JSON/')
-# def puppyJSON(shelter_id, puppy_id):
-#     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
-#     puppy = session.query(Puppy).filter_by(shelter_id = shelter_id).filter_by(id = puppy_id).one()
-#     return jsonify(Puppy = puppy.serialize)
-#
-#
-# #Attempt at an API endpoint (GET Req)
-# @app.route('/shelters/<int:shelter_id>/menu/JSON/')
-# def show_puppies_JSON(shelter_id):
-#     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
-#     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id).all()
-#     return jsonify(Puppies = [puppy.serialize for puppy in puppies])
+###############
+#adopters CRUD
+###############
+
+@app.route('/adopters/')
+def show_adopters():
+    output = render_template('page_head.html', title = "The State Adopter Manager")
+    adopters = session.query(Adopter).all()
+    output += render_template('show_adopters.html', adopters=adopters)
+    return output
+
+@app.route('/adopters/new/', methods=['GET', 'POST'])
+def new_adopter():
+    """page to create a new menu item."""
+    if request.method == "POST":
+        new_name = request.form['new_name']
+        new_adopter = Adopter( name=new_name )
+        session.add(new_adopter)
+        session.commit()
+        flash( "New adopter '" + new_name + "' added!")
+        return redirect(url_for("show_adopters"))
+
+    else:
+        output = render_template('page_head.html', title = "Add a New Adopter! XD")
+        # output += "new_adopter!!"
+        output += render_template('new_adopter.html')
+        return output
+
+
+@app.route('/adopters/<int:adopter_id>/edit/', methods=['GET', 'POST'])
+def edit_adopter(adopter_id):
+    """page to edit a adopter's basic information."""
+    if request.method == "POST":
+        edited_name = request.form['edited_name']
+        old_name = session.query(Shelter).filter_by(id=adopter_id).first().name
+        result = session.execute("""
+                UPDATE adopter
+                SET name=:edited_name
+                WHERE id=:edited_adopter_id;
+            """,
+            {"edited_name": edited_name,
+            "edited_adopter_id": adopter_id}
+        )
+        session.commit()
+        flash( "Shelter '"+old_name+"' renamed to '"+edited_name+"'. Jawohl!")
+        return redirect(url_for("show_adopters"))
+
+    else:
+        output = render_template('page_head.html', title = "Edit a Shelter")
+        adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        output += render_template('edit_adopter.html', adopter = adopter )
+        return output
+
+
+@app.route('/adopters/<int:adopter_id>/delete/', methods=["GET","POST"])
+def delete_adopter(adopter_id):
+    """page to delete a puppy."""
+    if request.method == "POST":
+        delete_this_adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        session.delete(delete_this_adopter)
+        session.commit()
+        flash( "Shelter '" + delete_this_adopter.name + "' deleted. Auf Wiedersehen!")
+        return redirect(url_for("show_adopters"))
+
+    else:
+        output = render_template('page_head.html', title = "Delete a Shelter")
+        adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        output += render_template( 'delete_adopter.html', adopter = adopter )
+        return output
+
+#Attempt at an API endpoint (GET Req)
+@app.route('/shelters/<int:shelter_id>/menu/<int:puppy_id>/JSON/')
+def puppyJSON(shelter_id, puppy_id):
+    shelter = session.query(Shelter).filter_by(id = shelter_id).one()
+    puppy = session.query(Puppy).filter_by(shelter_id = shelter_id).filter_by(id = puppy_id).one()
+    return jsonify(Puppy = puppy.serialize)
+
+
+#Attempt at an API endpoint (GET Req)
+@app.route('/shelters/<int:shelter_id>/menu/JSON/')
+def show_puppies_JSON(shelter_id):
+    shelter = session.query(Shelter).filter_by(id = shelter_id).one()
+    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id).all()
+    return jsonify(Puppies = [puppy.serialize for puppy in puppies])
 
 
 if __name__ == "__main__":
