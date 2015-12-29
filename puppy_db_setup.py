@@ -181,12 +181,10 @@ def before_flush(session, flush_context, instances):
     for each in session.new:
         print each.__tablename__
         if each.__tablename__ == "puppy":
-
             print "each.shelter_id is: ", each.shelter_id
             remaining_capacity, current_occupancy = capacity_counter(
                                                             session,
                                                             each.shelter_id)
-
             if remaining_capacity - 1 < 0:
                 puppies_on_hold.append(each)
                 print puppies_on_hold
