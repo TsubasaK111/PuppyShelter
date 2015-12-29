@@ -1,11 +1,11 @@
-<h1>Rename your Puppy</h1>
+<h1>Rename your Shelter</h1>
 
-<form action = {{ url_for('edit_puppy',shelter_id=shelter.id, puppy_id=puppy.id) }} method = 'POST' enctype = 'multipart/form-data'>
-    <input name = 'edited_name' type = 'text' placeholder = "{{ puppy.name }}">
+<form action = {{ url_for('edit_shelter',shelter_id=shelter.id) }} method = 'POST' enctype = 'multipart/form-data'>
+    <input name = 'edited_name' type = 'text' placeholder = "{{ shelter.name }}">
     <input type = 'submit' value = 'Rename'>
 </form>
 
-<a href={{ url_for('show_puppies', shelter_id=shelter.id) }} >cancel</a>
+<a href={{ url_for('show_shelters') }} >cancel</a>
 
 </body>
 </html>

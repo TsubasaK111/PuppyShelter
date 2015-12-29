@@ -24,7 +24,7 @@ session = DatabaseSession()
 
 @app.route('/shelters/')
 def show_shelters():
-    output = render_template('page_head.html', title = "The County Shelter Manager")
+    output = render_template('page_head.html', title = "The State Shelter Manager")
     shelters = session.query(Shelter).all()
     output += render_template('show_shelters.html', shelters=shelters)
     return output
@@ -38,65 +38,58 @@ def new_shelter():
         new_shelter = Shelter( name=new_name )
         session.add(new_shelter)
         session.commit()
-        flash( "new shelter '" + new_name + "' added!")
+        flash( "New shelter '" + new_name + "' added!")
         return redirect(url_for("show_shelters"))
 
     else:
         output = render_template('page_head.html', title = "Add a New Shelter! XD")
-        output += "new_shelter!!"
-        # output += render_template('new_shelter.html')
+        # output += "new_shelter!!"
+        output += render_template('new_shelter.html')
         return output
 
 
 @app.route('/shelters/<int:shelter_id>/edit/', methods=['GET', 'POST'])
 def edit_shelter(shelter_id):
     """page to edit a shelter's basic information."""
-    return "edit_shelter!"
-    # if request.method == "POST":
-    #     edited_name = request.form['edited_name']
-    #     old_name = session.query(Puppy).filter_by(id = puppy_id).first().name
-    #
-    #     result = session.execute("""
-    #             UPDATE puppy
-    #             SET name=:edited_name
-    #             WHERE id=:edited_puppy_id;
-    #         """,
-    #         {"edited_name": edited_name,
-    #         "edited_puppy_id": puppy_id}
-    #     )
-    #     session.commit()
-    #     flash( "item '" +  old_name + "' edited to '" + edited_name + "'. Jawohl!")
-    #     return redirect(url_for("show_puppies", shelter_id=shelter_id))
-    #
-    # else:
-    #     output = render_template('page_head.html', title = "The Menu Manager")
-    #     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-    #     puppy = session.query(Puppy).filter_by(id = puppy_id).first()
-    #     output += render_template('edit_puppy.html',
-    #                               shelter = shelter,
-    #                               puppy = puppy )
-    #     return output
+    # return "edit_shelter!"
+    if request.method == "POST":
+        edited_name = request.form['edited_name']
+        old_name = session.query(Shelter).filter_by(id=shelter_id).first().name
+        result = session.execute("""
+                UPDATE shelter
+                SET name=:edited_name
+                WHERE id=:edited_shelter_id;
+            """,
+            {"edited_name": edited_name,
+            "edited_shelter_id": shelter_id}
+        )
+        session.commit()
+        flash( "Shelter '"+old_name+"' renamed to '"+edited_name+"'. Jawohl!")
+        return redirect(url_for("show_shelters"))
+
+    else:
+        output = render_template('page_head.html', title = "Edit a Shelter")
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        output += render_template('edit_shelter.html', shelter = shelter )
+        return output
 
 
 @app.route('/shelters/<int:shelter_id>/delete/', methods=["GET","POST"])
 def delete_shelter(shelter_id):
     """page to delete a puppy."""
-    return "delete_shelter!"
-    # if request.method == "POST":
-    #     deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
-    #     session.delete(deletedMenuItem)
-    #     session.commit()
-    #     flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
-    #     return redirect(url_for("show_puppies", shelter_id=shelter_id))
-    #
-    # else:
-    #     output = render_template('page_head.html', title = "The Menu Manager")
-    #     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-    #     puppy = session.query(Puppy).filter_by(id = puppy_id).first()
-    #     output += render_template( 'delete_puppy.html',
-    #                                puppy = puppy,
-    #                                shelter = shelter )
-    #     return output
+    # return "delete_shelter!"
+    if request.method == "POST":
+        delete_this_shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        session.delete(delete_this_shelter)
+        session.commit()
+        flash( "Shelter '" + delete_this_shelter.name + "' deleted. Auf Wiedersehen!")
+        return redirect(url_for("show_shelters"))
+
+    else:
+        output = render_template('page_head.html', title = "Delete a Shelter")
+        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+        output += render_template( 'delete_shelter.html', shelter = shelter )
+        return output
 
 
 ###############
@@ -170,10 +163,10 @@ def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
     # return "delete_puppy!"
     if request.method == "POST":
-        deletedMenuItem = session.query(Puppy).filter_by(id = puppy_id).first()
-        session.delete(deletedMenuItem)
+        delete_this_puppy = session.query(Puppy).filter_by(id = puppy_id).first()
+        session.delete(delete_this_puppy)
         session.commit()
-        flash( "item '" + deletedMenuItem.name + "' deleted. Auf Wiedersehen!")
+        flash( "item '" + delete_this_puppy.name + "' deleted. Auf Wiedersehen!")
         return redirect(url_for("show_puppies", shelter_id=shelter_id))
 
     else:
