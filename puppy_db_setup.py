@@ -106,7 +106,7 @@ puppies_on_hold = []
 
 
 #calculate number of puppies in shelter.
-def occupancy_counter(session, this_shelter_id):
+def current_occupancy_counter(session, this_shelter_id):
     puppy_count_SQL = text("""
                         SELECT COUNT(*)
                         FROM puppy
@@ -119,8 +119,8 @@ def occupancy_counter(session, this_shelter_id):
     print "puppy_count is: ", puppy_count
     return puppy_count
 
-def capacity_counter(session, this_shelter_id):
-    current_occupancy = occupancy_counter(session, this_shelter_id)
+def remaining_capacity_counter(session, this_shelter_id):
+    current_occupancy = current_occupancy_counter(session, this_shelter_id)
     remaining_capacity_SQL = text("""
                         SELECT (maximum_capacity - :current_occupancy) AS r
                         FROM shelter
@@ -134,11 +134,10 @@ def capacity_counter(session, this_shelter_id):
     return remaining_capacity, current_occupancy
 
 def load_balancer(session, this_puppy_id):
-    #TODO: Force load balancing
     remaining_capacity_list = []
     shelters = session.query(Shelter).order_by(Shelter.id.asc())
     for shelter in shelters:
-        remaining_capacity, ignore = capacity_counter(session, shelter.id)
+        remaining_capacity, ignore = remaining_capacity_counter(session, shelter.id)
         remaining_capacity_list.append(remaining_capacity)
     print remaining_capacity_list
     print remaining_capacity_list.index(max(remaining_capacity_list))
@@ -187,7 +186,7 @@ def before_flush(session, flush_context, instances):
         print each.__tablename__
         if each.__tablename__ == "puppy":
             print "each.shelter_id is: ", each.shelter_id
-            remaining_capacity, current_occupancy = capacity_counter(
+            remaining_capacity, current_occupancy = remaining_capacity_counter(
                                                             session,
                                                             each.shelter_id)
             if remaining_capacity - 1 < 0:
