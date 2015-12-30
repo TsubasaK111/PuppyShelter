@@ -101,16 +101,18 @@ def show_puppies(shelter_id):
     output += render_template( 'show_puppies.html',
                                shelter=shelter,
                                puppies=puppies )
+    output += "show_puppies!"
     return output
 
 @app.route('/adopters/<int:adopter_id>/')
-def show_puppies(adopter_id):
+def show_puppies_by_adopter(adopter_id):
     output = render_template('page_head.html', title = "The Puppy Manager")
-    shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-    puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
-    output += render_template( 'show_puppies.html',
-                               shelter=shelter,
-                               puppies=puppies )
+    output += "show_puppies_by_adopter!"
+    # adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+    # puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
+    # output += render_template( 'show_puppies.html',
+    #                            shelter=shelter,
+    #                            puppies=puppies )
     return output
 
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
@@ -234,8 +236,9 @@ def edit_adopter(adopter_id):
 
     else:
         output = render_template('page_head.html', title = "Edit a Shelter")
-        adopter = session.query(Shelter).filter_by(id = adopter_id).first()
-        output += render_template('edit_adopter.html', adopter = adopter )
+        output += "edit_adopter!"
+        # adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        # output += render_template('edit_adopter.html', adopter = adopter )
         return output
 
 
@@ -251,8 +254,9 @@ def delete_adopter(adopter_id):
 
     else:
         output = render_template('page_head.html', title = "Delete a Shelter")
-        adopter = session.query(Shelter).filter_by(id = adopter_id).first()
-        output += render_template( 'delete_adopter.html', adopter = adopter )
+        output += "delete_adopter!"
+        # adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        # output += render_template( 'delete_adopter.html', adopter = adopter )
         return output
 
 #Attempt at an API endpoint (GET Req)

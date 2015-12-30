@@ -51,7 +51,7 @@ class Puppy(Base):
     weight = Column( String(14) )
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
-    adopter_id = Column( Interger, ForeignKey('adopter.id') )
+    adopter_id = Column( Integer, ForeignKey('adopter.id') )
     adopted = Column( Boolean, default=False )
     id = Column( Integer, primary_key = True )
 
@@ -78,7 +78,6 @@ class Puppy_Profile(Base):
 
 class Adopter(Base):
     __tablename__ = 'adopter'
-    puppy_id = Column( Integer, ForeignKey('puppy.id') )
     name = Column( String(50), nullable = False )
     address = Column( String(200) )
     city = Column( String(50) )
