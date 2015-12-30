@@ -1,4 +1,4 @@
-from puppy_setup import session, Shelter, Puppy, Puppy_Profile
+from puppy_db_setup import session, Shelter, Puppy, Puppy_Profile, Adopter
 
 from random import randint
 import datetime

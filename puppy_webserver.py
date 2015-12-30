@@ -221,7 +221,7 @@ def edit_adopter(adopter_id):
     """page to edit a adopter's basic information."""
     if request.method == "POST":
         edited_name = request.form['edited_name']
-        old_name = session.query(Shelter).filter_by(id=adopter_id).first().name
+        old_name = session.query(Adopter).filter_by(id=adopter_id).first().name
         result = session.execute("""
                 UPDATE adopter
                 SET name=:edited_name
@@ -231,14 +231,14 @@ def edit_adopter(adopter_id):
             "edited_adopter_id": adopter_id}
         )
         session.commit()
-        flash( "Shelter '"+old_name+"' renamed to '"+edited_name+"'. Jawohl!")
+        flash( "Adopter '"+old_name+"' renamed to '"+edited_name+"'. Jawohl!")
         return redirect(url_for("show_adopters"))
 
     else:
-        output = render_template('page_head.html', title = "Edit a Shelter")
-        output += "edit_adopter!"
-        # adopter = session.query(Shelter).filter_by(id = adopter_id).first()
-        # output += render_template('edit_adopter.html', adopter = adopter )
+        output = render_template('page_head.html', title = "Edit a Adopter")
+        # output += "edit_adopter!"
+        adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+        output += render_template('edit_adopter.html', adopter = adopter )
         return output
 
 
@@ -246,17 +246,17 @@ def edit_adopter(adopter_id):
 def delete_adopter(adopter_id):
     """page to delete a puppy."""
     if request.method == "POST":
-        delete_this_adopter = session.query(Shelter).filter_by(id = adopter_id).first()
+        delete_this_adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         session.delete(delete_this_adopter)
         session.commit()
-        flash( "Shelter '" + delete_this_adopter.name + "' deleted. Auf Wiedersehen!")
+        flash( "Adopter '" + delete_this_adopter.name + "' deleted. Auf Wiedersehen!")
         return redirect(url_for("show_adopters"))
 
     else:
-        output = render_template('page_head.html', title = "Delete a Shelter")
-        output += "delete_adopter!"
-        # adopter = session.query(Shelter).filter_by(id = adopter_id).first()
-        # output += render_template( 'delete_adopter.html', adopter = adopter )
+        output = render_template('page_head.html', title = "Delete an Adopter")
+        # output += "delete_adopter!"
+        adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+        output += render_template( 'delete_adopter.html', adopter = adopter )
         return output
 
 #Attempt at an API endpoint (GET Req)
