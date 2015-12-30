@@ -16,7 +16,7 @@ import pdb
 Base = declarative_base()
 
 
-# Table for many to many relationship with Puppy_Profile
+# Table for many to many relationship with Puppy
 association_table = Table('association', Base.metadata,
     Column('shelter_id', Integer, ForeignKey('shelter.id')),
     Column('puppy_id', Integer, ForeignKey('puppy.id'))
@@ -52,7 +52,6 @@ class Puppy(Base):
     entry_date = Column( DateTime, default=func.now() )
     shelter_id = Column( Integer, ForeignKey('shelter.id') )
     adopter_id = Column( Integer, ForeignKey('adopter.id') )
-    adopted = Column( Boolean, default=False )
     id = Column( Integer, primary_key = True )
 
     # One to one relationship with Puppy_Profile
@@ -108,17 +107,17 @@ puppies_on_hold = []
 
 #calculate number of puppies in shelter.
 def occupancy_counter(session, this_shelter_id):
-    shelter_count_SQL = text("""
+    puppy_count_SQL = text("""
                         SELECT COUNT(*)
                         FROM puppy
-                        WHERE shelter_id =:this_shelter_id AND adopted=0
+                        WHERE shelter_id =:this_shelter_id AND adopter_id ISNULL
                         """)
-    shelter_count = session.execute(
-            shelter_count_SQL,
+    puppy_count = session.execute(
+            puppy_count_SQL,
             {"this_shelter_id": this_shelter_id}
         ).scalar()
-    print "shelter_count is: ", shelter_count
-    return shelter_count
+    print "puppy_count is: ", puppy_count
+    return puppy_count
 
 def capacity_counter(session, this_shelter_id):
     current_occupancy = occupancy_counter(session, this_shelter_id)
@@ -144,28 +143,29 @@ def load_balancer(session, this_puppy_id):
     print remaining_capacity_list
     print remaining_capacity_list.index(max(remaining_capacity_list))
 
-def adopt_puppy(session, this_puppy_id, adopters):
+def adopt_puppy(session, puppy_id, adopter_id):
     update_puppy_SQL = text("""
                         UPDATE puppy
-                        SET adopted = 1
-                        WHERE id = :this_puppy_id""")
+                        SET adopter_id = :adopter_id,
+                            shelter_id = NULL
+                        WHERE id = :puppy_id""")
     update_puppy_result = session.execute(
                                       update_puppy_SQL,
-                                      {"this_puppy_id": this_puppy_id}
+                                      {"puppy_id": puppy_id,
+                                      "adopter_id": adopter_id}
                                       )
     print "update_puppy_result: ", update_puppy_result
-    for adopter in adopters:
-        update_adopter_SQL = text("""
-            UPDATE adopter
-            SET puppy_id = :this_puppy_id
-            WHERE id = :adopter_id
-        """)
-        update_adopter_result = session.execute(
-                                                update_adopter_SQL,
-                                                {"this_puppy_id": this_puppy_id,
-                                                "adopter_id": adopter.id}
-                                               )
-        print "update_adopter_result: ", update_adopter_result
+    # update_adopter_SQL = text("""
+    #     UPDATE adopter
+    #     SET puppy_id = :puppy_id
+    #     WHERE id = :adopter_id
+    # """)
+    # update_adopter_result = session.execute(
+    #                                         update_adopter_SQL,
+    #                                         {"puppy_id": puppy_id,
+    #                                         "adopter_id": adopter.id}
+    #                                        )
+    # print "update_adopter_result: ", update_adopter_result
 
 def after_attach(session, instance):
     print "\nnew attach!!\n"
