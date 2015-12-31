@@ -107,12 +107,28 @@ def show_puppies(shelter_id):
 @app.route('/adopters/<int:adopter_id>/')
 def show_puppies_by_adopter(adopter_id):
     output = render_template('page_head.html', title = "The Puppy Manager")
-    output += "show_puppies_by_adopter!"
-    # adopter = session.query(Adopter).filter_by(id = adopter_id).first()
-    # puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
-    # output += render_template( 'show_puppies.html',
-    #                            shelter=shelter,
-    #                            puppies=puppies )
+    # output += "show_puppies_by_adopter!"
+    adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+    puppies = session.query(Puppy).filter_by(adopter_id = adopter_id)
+    output += render_template( 'show_puppies_by_adopter.html',
+                               adopter=adopter,
+                               puppies=puppies )
+    return output
+
+@app.route('/adopters/<int:adopter_id>/adopt/')
+def adopt_puppy(adopter_id):
+    output = render_template('page_head.html', title = "Adopt a Puppy!!!")
+    adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+    # puppies = session.query(Puppy).filter_by(adopter_id = 0)
+    puppies = session.execute("""
+            SELECT *
+            FROM puppy
+            WHERE adopter_id ISNULL
+        """)
+    output += render_template( 'adopt_puppy.html',
+                               adopter=adopter,
+                               puppies=puppies )
+    flash("Please select a puppy to adopt.")
     return output
 
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
@@ -122,12 +138,19 @@ def new_puppy(shelter_id):
     if request.method == "POST":
         new_name = request.form['new_name']
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-        new_puppy = Puppy( name=new_name,
-                                shelter_id=shelter.id )
-        session.add(new_puppy)
-        session.commit()
-        flash( "new puppy '" + new_name + "' added!")
-        return redirect(url_for("show_puppies", shelter_id=shelter.id))
+        if (shelter.maximum_capacity - shelter.current_occupancy) <= 0:
+            # flash( "'"+shelter.name+"' is full, and puppy '"+new_name+"' can't be added, sorry :(")
+            flash( """
+                '{shelter_name}' is full, and the puppy
+                '{new_name}' couldn't be added, sorry :(
+                """.format(shelter_name=shelter.name, new_name=new_name))
+            return redirect(url_for("show_puppies", shelter_id=shelter.id))
+        else:
+            new_puppy = Puppy( name=new_name, shelter_id=shelter.id )
+            session.add(new_puppy)
+            session.commit()
+            flash( "new puppy '" + new_name + "' added!")
+            return redirect(url_for("show_puppies", shelter_id=shelter.id))
 
     else:
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
