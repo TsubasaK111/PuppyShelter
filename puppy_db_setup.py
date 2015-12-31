@@ -167,12 +167,11 @@ def adopt_puppy(session, puppy_id, adopter_id):
     # print "update_adopter_result: ", update_adopter_result
 
 def after_attach(session, instance):
-    print "\nnew attach!!\n"
-    print "instance is: ", instance
+    """ flush session (commit all changes to the SQL db)
+        whenever a 'shelter' is added. """
+    print "\nnew attach! instance is: ", instance
     print "Session.new is: ", session.new
     if instance.__tablename__ == "shelter":
-        print "it's a shelter attach!"
-        print instance
         session.flush()
 
 
@@ -180,10 +179,10 @@ event.listen(session, 'after_attach', after_attach)
 
 
 def before_flush(session, flush_context, instances):
-    print "\nnew flush!!\n"
-    print "Session.new is: ", session.new
+    """populate the "current_occupancy" column, prevent puppy overflows."""
+    print "\nnew flush! Session.new is: ", session.new
     for each in session.new:
-        print each.__tablename__
+        print "__tablename__ is: ", each.__tablename__
         if each.__tablename__ == "puppy":
             print "each.shelter_id is: ", each.shelter_id
             remaining_capacity, current_occupancy = remaining_capacity_counter(
@@ -191,9 +190,8 @@ def before_flush(session, flush_context, instances):
                                                             each.shelter_id)
             if remaining_capacity - 1 < 0:
                 puppies_on_hold.append(each)
-                print "puppies_on_hold: ", puppies_on_hold
+                print "shelter full! puppies_on_hold: ", puppies_on_hold
                 session.expunge(each)
-                print "doggie sent to heaven!"
                 pdb.set_trace()
             else:
                 occupancy_update_result = session.execute("""
@@ -204,7 +202,6 @@ def before_flush(session, flush_context, instances):
                     {"current_occupancy": current_occupancy,
                     "shelter_id": each.shelter_id}
                     )
-                print "current_occupancy updated!"
                 print each.name, " has been put into: ", occupancy_update_result
 
 
