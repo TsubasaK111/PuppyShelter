@@ -10,6 +10,8 @@
   {% endif %}
 {% endwith %}
 
+<a href={{ url_for('show_puppies_by_adopter', adopter_id=adopter.id) }} >Go Back</a>
+
 {% for puppy in puppies %}
   <div>
     <h3>{{puppy.name}}</h3>
@@ -23,12 +25,13 @@
     <p> {{puppy.shelter_id}}</p>
 
     <form action = {{ url_for('adopt_puppy', adopter_id=adopter.id, puppy_id=puppy.id) }} method = 'POST' enctype = 'multipart/form-data'>
+        <input name = 'adopt_this_puppy_id' type = 'hidden' value = "{{ puppy.id }}">
         <input type = 'submit' value = 'Adopt'>
     </form>
   </div>
 {% endfor %}
 
-<a href={{ url_for('show_puppies_by_adopter', adopter_id=adopter.id) }} >cancel</a>
+<a href={{ url_for('show_puppies_by_adopter', adopter_id=adopter.id) }} >Go Back</a>
 
 </body>
 

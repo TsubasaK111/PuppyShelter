@@ -107,7 +107,6 @@ def show_puppies(shelter_id):
 @app.route('/adopters/<int:adopter_id>/')
 def show_puppies_by_adopter(adopter_id):
     output = render_template('page_head.html', title = "The Puppy Manager")
-    # output += "show_puppies_by_adopter!"
     adopter = session.query(Adopter).filter_by(id = adopter_id).first()
     puppies = session.query(Puppy).filter_by(adopter_id = adopter_id)
     output += render_template( 'show_puppies_by_adopter.html',
@@ -115,21 +114,41 @@ def show_puppies_by_adopter(adopter_id):
                                puppies=puppies )
     return output
 
-@app.route('/adopters/<int:adopter_id>/adopt/')
+@app.route('/adopters/<int:adopter_id>/adopt/', methods=['GET', 'POST'])
 def adopt_puppy(adopter_id):
-    output = render_template('page_head.html', title = "Adopt a Puppy!!!")
-    adopter = session.query(Adopter).filter_by(id = adopter_id).first()
-    # puppies = session.query(Puppy).filter_by(adopter_id = 0)
-    puppies = session.execute("""
-            SELECT *
-            FROM puppy
-            WHERE adopter_id ISNULL
-        """)
-    output += render_template( 'adopt_puppy.html',
-                               adopter=adopter,
-                               puppies=puppies )
-    flash("Please select a puppy to adopt.")
-    return output
+    """page to adopt puppies, accessed from the Adopter directory."""
+
+    if request.method == "POST":
+        adopt_this_puppy_id = request.form["adopt_this_puppy_id"]
+        adopt_this_puppy_name = session.query(Puppy).\
+                                filter_by(id = adopt_this_puppy_id).first().name
+        result = session.execute("""
+            UPDATE puppy
+            SET adopter_id = :adopter_id,
+                shelter_id = NULL
+            WHERE id = :adopt_this_puppy_id
+        """,
+        { "adopter_id": adopter_id,
+          "adopt_this_puppy_id": adopt_this_puppy_id }
+        )
+        session.commit()
+        flash("Puppy '" + adopt_this_puppy_name + "' adopted! Congrats!")
+        return redirect(url_for("adopt_puppy", adopter_id = adopter_id))
+
+    if request.method == "GET":
+        output = render_template('page_head.html', title = "Adopt a Puppy!!!")
+        adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+        puppies = session.execute("""
+                SELECT *
+                FROM puppy
+                WHERE adopter_id ISNULL
+            """)
+        # print "puppies length is: ", len(puppies)
+        flash("Please select a puppy to adopt.")
+        output += render_template( 'adopt_puppy.html',
+                                   adopter=adopter,
+                                   puppies=puppies )
+        return output
 
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
@@ -159,10 +178,9 @@ def new_puppy(shelter_id):
         return output
 
 
-@app.route('/shelters/<int:shelter_id>/<int:puppy_id>/edit/', methods=['GET', 'POST'])
+@app.route('/shelters/<shelter_id>/<int:puppy_id>/edit/', methods=['GET', 'POST'])
 def edit_puppy(shelter_id, puppy_id):
     """page to edit a puppy's basic information."""
-    # return "edit_puppy!"
     if request.method == "POST":
         edited_name = request.form['edited_name']
         old_name = session.query(Puppy).filter_by(id = puppy_id).first().name
@@ -181,15 +199,19 @@ def edit_puppy(shelter_id, puppy_id):
 
     else:
         output = render_template('page_head.html', title = "The Menu Manager")
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
+        print "shelter_id is: ", shelter_id
+        if shelter_id == "n":
+            shelter = session.query(Shelter).filter_by(id = puppy.shelter_id).first()
+        else:
+            shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         output += render_template('edit_puppy.html',
                                   shelter = shelter,
                                   puppy = puppy )
         return output
 
 
-@app.route('/shelters/<int:shelter_id>/<int:puppy_id>/delete/', methods=["GET","POST"])
+@app.route('/shelters/<shelter_id>/<int:puppy_id>/delete/', methods=["GET","POST"])
 def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
     # return "delete_puppy!"
@@ -202,8 +224,11 @@ def delete_puppy(shelter_id, puppy_id):
 
     else:
         output = render_template('page_head.html', title = "The Menu Manager")
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
+        if shelter_id == "n":
+            shelter = session.query(Shelter).filter_by(id = puppy.shelter_id).first()
+        else:
+            shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         output += render_template( 'delete_puppy.html',
                                    puppy = puppy,
                                    shelter = shelter )
