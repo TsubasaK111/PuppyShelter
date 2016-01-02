@@ -152,7 +152,7 @@ def adopt_puppy(session, puppy_id, adopter_id):
                                       update_puppy_SQL,
                                       {"puppy_id": puppy_id,
                                       "adopter_id": adopter_id}
-                                      )
+                                         )
     print "update_puppy_result: ", update_puppy_result
     # update_adopter_SQL = text("""
     #     UPDATE adopter
