@@ -1,18 +1,13 @@
 from flask import render_template, url_for, request, redirect, flash, jsonify
 from puppies import app
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from models import session, Shelter, Puppy, Puppy_Profile, Adopter
-
-import pdb
-import pprint
 
 
 ###############
 #shelters CRUD
 ###############
+
 
 @app.route('/shelters/')
 def show_shelters():
