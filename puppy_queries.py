@@ -1,7 +1,7 @@
 from sqlalchemy import text, func
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from puppy_setup import Base, Shelter, Puppy
+from puppies.models import Base, Shelter, Puppy
 
 
 engine = create_engine('sqlite:///puppyShelters.db')

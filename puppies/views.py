@@ -4,7 +4,7 @@ from puppies import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from puppy_db_setup import Base, Shelter, Puppy, Puppy_Profile, Adopter
+from models import Base, Shelter, Puppy, Puppy_Profile, Adopter
 
 import pdb
 import pprint
