@@ -4,16 +4,11 @@ from puppies import app
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from models import Base, Shelter, Puppy, Puppy_Profile, Adopter
+from models import session, Shelter, Puppy, Puppy_Profile, Adopter
 
 import pdb
 import pprint
 
-
-engine = create_engine('sqlite:///puppyShelters.db')
-Base.metadata.bind = engine
-DatabaseSession = sessionmaker(bind = engine)
-session = DatabaseSession()
 
 ###############
 #shelters CRUD
@@ -98,7 +93,6 @@ def show_puppies(shelter_id):
     output += render_template( 'show_puppies.html',
                                shelter=shelter,
                                puppies=puppies )
-    output += "show_puppies!"
     return output
 
 @app.route('/adopters/<int:adopter_id>/')
@@ -211,7 +205,6 @@ def edit_puppy(shelter_id, puppy_id):
 @app.route('/shelters/<shelter_id>/<int:puppy_id>/delete/', methods=["GET","POST"])
 def delete_puppy(shelter_id, puppy_id):
     """page to delete a puppy."""
-    # return "delete_puppy!"
     if request.method == "POST":
         delete_this_puppy = session.query(Puppy).filter_by(id = puppy_id).first()
         session.delete(delete_this_puppy)
@@ -281,7 +274,6 @@ def edit_adopter(adopter_id):
 
     else:
         output = render_template('page_head.html', title = "Edit a Adopter")
-        # output += "edit_adopter!"
         adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         output += render_template('edit_adopter.html', adopter = adopter )
         return output
@@ -299,7 +291,6 @@ def delete_adopter(adopter_id):
 
     else:
         output = render_template('page_head.html', title = "Delete an Adopter")
-        # output += "delete_adopter!"
         adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         output += render_template( 'delete_adopter.html', adopter = adopter )
         return output

@@ -96,10 +96,10 @@ Base.metadata.create_all(engine)
 Base.metadata.bind = engine
 
 
-DBSession = sessionmaker(bind=engine)
+DatabaseSession = sessionmaker(bind=engine)
 
 
-session = DBSession()
+session = DatabaseSession()
 
 
 puppies_on_hold = []
@@ -154,17 +154,6 @@ def adopt_puppy(session, puppy_id, adopter_id):
                                       "adopter_id": adopter_id}
                                          )
     print "update_puppy_result: ", update_puppy_result
-    # update_adopter_SQL = text("""
-    #     UPDATE adopter
-    #     SET puppy_id = :puppy_id
-    #     WHERE id = :adopter_id
-    # """)
-    # update_adopter_result = session.execute(
-    #                                         update_adopter_SQL,
-    #                                         {"puppy_id": puppy_id,
-    #                                         "adopter_id": adopter.id}
-    #                                        )
-    # print "update_adopter_result: ", update_adopter_result
 
 def after_attach(session, instance):
     """ flush session (commit all changes to the SQL db)
