@@ -1,6 +1,6 @@
 SECRET_KEY = "NOT_SO_SECRET_KEY!!!"
 DEBUG = True
-TESTING = True
+TESTING = False
 JSONIFY_PRETTYPRINT_REGULAR = True
 
 #Custom Configs

@@ -1,8 +1,10 @@
 from flask import render_template, url_for, request, redirect, flash, jsonify
+
 from puppies import app
 
 from models import session, Shelter, Puppy, Puppy_Profile, Adopter
 
+from forms import NewPuppyForm
 
 ###############
 #shelters CRUD
@@ -139,8 +141,8 @@ def adopt_puppy(adopter_id):
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
     """page to create a new menu item."""
-
-    if request.method == "POST":
+    form = NewPuppyForm(request.POST)
+    if request.method == "POST" and form.validate():
         new_name = request.form['new_name']
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         if (shelter.maximum_capacity - shelter.current_occupancy) <= 0:
@@ -228,7 +230,7 @@ def delete_puppy(shelter_id, puppy_id):
 def show_adopters():
     output = render_template('page_head.html', title = "The State Adopter Manager")
     adopters = session.query(Adopter).all()
-    output += render_template('show_adopters.html', adopters=adopters)
+    output += render_template('show_adopters.html')
     return output
 
 @app.route('/adopters/new/', methods=['GET', 'POST'])
@@ -239,7 +241,7 @@ def new_adopter():
         new_adopter = Adopter( name=new_name )
         session.add(new_adopter)
         session.commit()
-        flash( "New adopter '" + new_name + "' added!")
+        # flash( "New adopter '" + new_name + "' added!")
         return redirect(url_for("show_adopters"))
 
     else:
