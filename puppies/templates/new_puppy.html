@@ -1,10 +1,13 @@
-<h1>Shelter a new puppy in {{shelter.name}}!</h1>
+<h1>Shelter a Puppy in {{shelter.name}}!</h1>
 
 <form action = {{ url_for('new_puppy', shelter_id = shelter.id) }} method = "POST" enctype = "multipart/form-data">
-  <input name = 'name' type = 'text' >
-  <input name = 'gender' type = 'radio', value = 'male'>
-  <input name = 'gender' type = 'radio', value = 'female'>
-  <!-- <input name = 'shelter_id' type = 'hidden', value = {{shelter.id}}> -->
+  <div><input name = 'name' type = 'text' ></div>
+  <h3>Gender:</h3>
+  <div>
+    <input name = 'gender' type = 'radio', value = 'male'> Male
+    <input name = 'gender' type = 'radio', value = 'female'> Female
+  </div>
+  <input name = 'shelter_id' type = 'hidden', value = {{shelter.id}}>
   <input type = 'submit' value = 'Create'>
 </form>
 
