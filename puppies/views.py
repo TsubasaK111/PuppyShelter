@@ -4,7 +4,7 @@ from puppies import app
 
 from models import session, Shelter, Puppy, Puppy_Profile, Adopter
 
-from forms import NewPuppyForm
+from forms import *
 
 import pdb, pprint
 
@@ -15,7 +15,10 @@ import pdb, pprint
 
 @app.route('/shelters/')
 def show_shelters():
-    output = render_template('page_head.html', title = "The State Shelter Manager")
+    output = render_template(
+                'page_head.html',
+                title = "California State Puppy Shelter Directory",
+                form = 0 )
     shelters = session.query(Shelter).all()
     output += render_template('show_shelters.html', shelters=shelters)
     return output
@@ -23,60 +26,63 @@ def show_shelters():
 @app.route('/shelters/new/', methods=['GET', 'POST'])
 def new_shelter():
     """page to create a new menu item."""
+    form = NewShelterForm(request.form)
     if request.method == "POST":
-        new_name = request.form['new_name']
-        new_shelter = Shelter( name=new_name )
+        new_shelter = Shelter()
+        form.populate_obj(new_shelter)
         session.add(new_shelter)
         session.commit()
-        flash( "New shelter '" + new_name + "' added!")
-        return redirect(url_for("show_shelters"))
+        flash( "New shelter '" + new_shelter.name + "' added!")
+        return redirect( url_for("show_shelters") )
 
     else:
-        output = render_template('page_head.html', title = "Add a New Shelter! XD")
-        # output += "new_shelter!!"
-        output += render_template('new_shelter.html')
+        output = render_template(
+            'page_head.html',
+            title = "Add a new shelter to the great state of California!",
+            form = form )
+        output += render_template( 'new_shelter.html', form = form )
         return output
 
 
 @app.route('/shelters/<int:shelter_id>/edit/', methods=['GET', 'POST'])
 def edit_shelter(shelter_id):
     """page to edit a shelter's basic information."""
+    shelter = session.query(Shelter).filter_by(id=shelter_id).first()
+    form = NewShelterForm( request.form, shelter )
     if request.method == "POST":
-        edited_name = request.form['edited_name']
-        old_name = session.query(Shelter).filter_by(id=shelter_id).first().name
-        result = session.execute("""
-                UPDATE shelter
-                SET name=:edited_name
-                WHERE id=:edited_shelter_id;
-            """,
-            {"edited_name": edited_name,
-            "edited_shelter_id": shelter_id}
-        )
+        old_name = shelter.name
+        form.populate_obj(shelter)
+        session.add(shelter)
         session.commit()
-        flash( "Shelter '"+old_name+"' renamed to '"+edited_name+"'. Jawohl!")
+        flash( "Shelter '"+old_name+"' renamed to '"+shelter.name+"'. Jawohl!")
         return redirect(url_for("show_shelters"))
 
     else:
-        output = render_template('page_head.html', title = "Edit a Shelter")
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-        output += render_template('edit_shelter.html', shelter = shelter )
+        output = render_template( 'page_head.html',
+                                  title = "Rename Your Shelter",
+                                  form = form )
+        output += render_template( 'edit_shelter.html',
+                                   form = form )
         return output
 
 
 @app.route('/shelters/<int:shelter_id>/delete/', methods=["GET","POST"])
 def delete_shelter(shelter_id):
     """page to delete a puppy."""
+    shelter = session.query(Shelter).filter_by(id=shelter_id).first()
+    form = NewShelterForm( request.form, shelter )
     if request.method == "POST":
-        delete_this_shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-        session.delete(delete_this_shelter)
+        session.delete(shelter)
         session.commit()
-        flash( "Shelter '" + delete_this_shelter.name + "' deleted. Auf Wiedersehen!")
+        flash( "Shelter '" + shelter.name + "' deleted. Auf Wiedersehen!")
         return redirect(url_for("show_shelters"))
 
     else:
-        output = render_template('page_head.html', title = "Delete a Shelter")
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-        output += render_template( 'delete_shelter.html', shelter = shelter )
+        output = render_template( 'page_head.html',
+                                  title = "Delete a Shelter",
+                                  form = form )
+        output += render_template( 'delete_shelter.html',
+                                   form = form )
         return output
 
 
@@ -86,7 +92,7 @@ def delete_shelter(shelter_id):
 
 @app.route('/shelters/<int:shelter_id>/')
 def show_puppies(shelter_id):
-    output = render_template('page_head.html', title = "The Puppy Manager")
+    output = render_template('page_head.html', title = "The Puppy Manager", form = 0)
     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
     output += render_template( 'show_puppies.html',
@@ -126,7 +132,7 @@ def adopt_puppy(adopter_id):
         return redirect(url_for("adopt_puppy", adopter_id = adopter_id))
 
     if request.method == "GET":
-        output = render_template('page_head.html', title = "Adopt a Puppy!!!")
+        output = render_template('page_head.html', title = "Adopt a Puppy!!!", form = 0)
         adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         puppies = session.execute("""
                 SELECT *
@@ -156,8 +162,6 @@ def new_puppy(shelter_id):
         else:
             new_puppy = Puppy( name=new_name )
             form.populate_obj(new_puppy)
-            # print "\ndebug @ POST new_puppy\n"
-            # pdb.set_trace()
             session.add(new_puppy)
             session.commit()
             flash( "new puppy '" + new_name + "' added!")
@@ -165,7 +169,7 @@ def new_puppy(shelter_id):
 
     else:
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
-        output = render_template('page_head.html', title = "Add a New Puppy! :D")
+        output = render_template('page_head.html', title = "Add a New Puppy! :D", form = 0)
         output += render_template( 'new_puppy.html',
                                    shelter = shelter,
                                    form = form )
@@ -192,7 +196,7 @@ def edit_puppy(shelter_id, puppy_id):
         return redirect(url_for("show_puppies", shelter_id=shelter_id))
 
     else:
-        output = render_template('page_head.html', title = "The Menu Manager")
+        output = render_template('page_head.html', title = "The Menu Manager", form = 0)
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
         print "shelter_id is: ", shelter_id
         if shelter_id == "n":
@@ -216,7 +220,7 @@ def delete_puppy(shelter_id, puppy_id):
         return redirect(url_for("show_puppies", shelter_id=shelter_id))
 
     else:
-        output = render_template('page_head.html', title = "The Menu Manager")
+        output = render_template('page_head.html', title = "The Menu Manager", form = 0)
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
         if shelter_id == "n":
             shelter = session.query(Shelter).filter_by(id = puppy.shelter_id).first()
@@ -234,7 +238,7 @@ def delete_puppy(shelter_id, puppy_id):
 
 @app.route('/adopters/')
 def show_adopters():
-    output = render_template('page_head.html', title = "The State Adopter Manager")
+    output = render_template('page_head.html', title = "The State Adopter Manager", form = 0)
     adopters = session.query(Adopter).all()
     output += render_template('show_adopters.html')
     return output
@@ -251,7 +255,7 @@ def new_adopter():
         return redirect(url_for("show_adopters"))
 
     else:
-        output = render_template('page_head.html', title = "Add a New Adopter! XD")
+        output = render_template('page_head.html', title = "Add a New Adopter! XD", form = 0)
         # output += "new_adopter!!"
         output += render_template('new_adopter.html')
         return output
@@ -276,7 +280,7 @@ def edit_adopter(adopter_id):
         return redirect(url_for("show_adopters"))
 
     else:
-        output = render_template('page_head.html', title = "Edit a Adopter")
+        output = render_template('page_head.html', title = "Edit a Adopter", form = 0)
         adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         output += render_template('edit_adopter.html', adopter = adopter )
         return output
@@ -293,7 +297,7 @@ def delete_adopter(adopter_id):
         return redirect(url_for("show_adopters"))
 
     else:
-        output = render_template('page_head.html', title = "Delete an Adopter")
+        output = render_template('page_head.html', title = "Delete an Adopter", form = 0)
         adopter = session.query(Adopter).filter_by(id = adopter_id).first()
         output += render_template( 'delete_adopter.html', adopter = adopter )
         return output

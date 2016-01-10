@@ -1,8 +1,6 @@
-<h1>Delete a Shelter</h1>
-
-<form action = {{ url_for('delete_shelter',shelter_id=shelter.id) }} method = 'POST' enctype = 'multipart/form-data' >
-    <p> Are you sure you want to delete {{shelter.name}}?</p>
-    <input type = 'submit' value = 'Delete'>
+<form method = 'POST' action = {{ url_for('delete_shelter', shelter_id=form.id.data) }}>
+    <p> Are you sure you want to delete {{form.name.data}}?</p>
+    <input type = 'submit' value = 'Delete {{form.name.data}}'>
 </form>
 
 <a href={{ url_for('show_shelters') }} >return to listing</a>

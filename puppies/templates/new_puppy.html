@@ -1,38 +1,17 @@
-<h1>Shelter a Puppy in {{shelter.name}}!</h1>
-
-<!-- <form action = {{ url_for('new_puppy', shelter_id = shelter.id) }} method = "POST" enctype = "multipart/form-data">
-  <div><input name = 'name' type = 'text' ></div>
-  <h3>Gender:</h3>
-  <div>
-    <input name = 'gender' type = 'radio', value = 'male'> Male
-    <input name = 'gender' type = 'radio', value = 'female'> Female
-  </div>
-  <input name = 'shelter_id' type = 'hidden', value = {{shelter.id}}>
-  <input type = 'submit' value = 'Create'>
-</form> -->
-
-{% if form.errors %}
-    <ul class="errors">
-        {% for field_name, field_errors in form.errors|dictsort if field_errors %}
-            {% for error in field_errors %}
-                <li>{{ form[field_name].label }}: {{ error }}</li>
-            {% endfor %}
-        {% endfor %}
-    </ul>
-{% endif %}
 
 <form method="POST" action={{ url_for('new_puppy', shelter_id=shelter.id) }}>
-  <div>{{ form.name.label }}: {{ form.name(class="css_class") }}</div>
-  <div>{{ form.gender.label }}:
-       male {{form.gender(type="radio",value="male")}}
-       female {{form.gender(type="radio",value="female")}}
+  <div>{{ form.name.label }}:   {{ form.name() }}</div>
+  <div>{{ form.gender.label }}: male {{form.gender(type="radio",value="male")}}
+                                female {{form.gender(type="radio",value="female")}}
   </div>
   <div>{{ form.weight.label }}: {{ form.weight() }}</div>
-  <div>{{ form.shelter_id(type="hidden",value=shelter.id) }}</div>
+  <div>{{ form.shelter_id( type="hidden",value=shelter.id ) }}</div>
   <input type = 'submit' value = 'Create'>
 </form>
 
-<a href={{ url_for('show_puppies', shelter_id=shelter.id) }} >return to listing</a>
+<a href={{ url_for('show_puppies', shelter_id=shelter.id) }}>
+  return to puppies listing
+</a>
 
 </body>
 </html>

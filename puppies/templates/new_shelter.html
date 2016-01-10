@@ -1,11 +1,9 @@
-<h1>Add a new shelter to the great state of California!</h1>
-
-<form action = {{ url_for('new_shelter') }} method = "POST" enctype = "multipart/form-data">
-  <input name = 'new_name' type = 'text' >
-  <input type = 'submit' value = 'Create'>
+<form method = "POST" action = {{ url_for('new_shelter') }}>
+  <div>{{ form.name.label }}: {{ form.name() }}</div>
+  <div><input type = "submit" value = "Create"></div>
 </form>
 
-<a href={{ url_for('show_shelters') }} >return to listing</a>
+<a href={{ url_for('show_shelters') }} >return to shelter listing</a>
 
 </body>
 </html>
