@@ -144,8 +144,6 @@ def adopt_puppy(adopter_id):
 def new_puppy(shelter_id):
     """page to create a new menu item."""
     form = NewPuppyForm(request.form)
-    # print "\ndebugging for new_puppy route!\n"
-    # pdb.set_trace()
     if request.method == "POST" and form.validate():
         new_name = request.form['name']
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
@@ -156,7 +154,10 @@ def new_puppy(shelter_id):
                 """.format(shelter_name=shelter.name, new_name=new_name))
             return redirect(url_for("show_puppies", shelter_id=shelter.id))
         else:
-            new_puppy = Puppy( name=new_name, shelter_id=shelter.id )
+            new_puppy = Puppy( name=new_name )
+            form.populate_obj(new_puppy)
+            # print "\ndebug @ POST new_puppy\n"
+            # pdb.set_trace()
             session.add(new_puppy)
             session.commit()
             flash( "new puppy '" + new_name + "' added!")
