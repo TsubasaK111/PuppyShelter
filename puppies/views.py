@@ -6,6 +6,8 @@ from models import session, Shelter, Puppy, Puppy_Profile, Adopter
 
 from forms import NewPuppyForm
 
+import pdb, pprint
+
 ###############
 #shelters CRUD
 ###############
@@ -141,12 +143,13 @@ def adopt_puppy(adopter_id):
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
     """page to create a new menu item."""
-    form = NewPuppyForm(request.POST)
+    form = NewPuppyForm(request.form)
+    # print "\ndebugging for new_puppy route!\n"
+    # pdb.set_trace()
     if request.method == "POST" and form.validate():
-        new_name = request.form['new_name']
+        new_name = request.form['name']
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         if (shelter.maximum_capacity - shelter.current_occupancy) <= 0:
-            # flash( "'"+shelter.name+"' is full, and puppy '"+new_name+"' can't be added, sorry :(")
             flash( """
                 '{shelter_name}' is full, and the puppy
                 '{new_name}' couldn't be added, sorry :(
