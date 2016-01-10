@@ -6,6 +6,8 @@ from models import session, Shelter, Puppy, Puppy_Profile, Adopter
 
 from forms import *
 
+from decimal import *
+
 import pdb, pprint
 
 ###############
@@ -92,9 +94,12 @@ def delete_shelter(shelter_id):
 
 @app.route('/shelters/<int:shelter_id>/')
 def show_puppies(shelter_id):
-    output = render_template('page_head.html', title = "The Puppy Manager", form = 0)
     shelter = session.query(Shelter).filter_by(id = shelter_id).first()
     puppies = session.query(Puppy).filter_by(shelter_id = shelter_id)
+    # pdb.set_trace()
+    output = render_template( 'page_head.html',
+                              title = "The Puppies of "+shelter.name,
+                              form = 0 )
     output += render_template( 'show_puppies.html',
                                shelter=shelter,
                                puppies=puppies )
@@ -102,9 +107,12 @@ def show_puppies(shelter_id):
 
 @app.route('/adopters/<int:adopter_id>/')
 def show_puppies_by_adopter(adopter_id):
-    output = render_template('page_head.html', title = "The Puppy Manager")
     adopter = session.query(Adopter).filter_by(id = adopter_id).first()
     puppies = session.query(Puppy).filter_by(adopter_id = adopter_id)
+
+    output = render_template( 'page_head.html',
+                              title = "The Puppies of "+adopter.name,
+                              form = 0 )
     output += render_template( 'show_puppies_by_adopter.html',
                                adopter=adopter,
                                puppies=puppies )

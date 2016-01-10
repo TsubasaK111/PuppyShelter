@@ -1,41 +1,22 @@
-<h1>{{shelter.name}}</h1>
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul>
-      {% for message in messages %}
-        <li><strong>{{ message }} </strong></li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
 <h3>
   Add a <a href={{ url_for('new_puppy', shelter_id=shelter.id) }}>New</a> Puppy!
 </h3>
 
 {% for puppy in puppies %}
 
-<div>
+  <div>
 
-<h3>{{puppy.name}}</h3>
+    <h3>{{puppy.name}}</h3>
+    <div>{{puppy.gender}}</div>
+    <div>{{puppy.weight.split('.')[0]+"."+puppy.weight.split('.')[1][0:2]}} kg</div>
+    <div> {{puppy.adopted}}</div>
 
-<!-- <p>{{puppy.description}}</p> -->
+    <a href={{ url_for('edit_puppy', shelter_id=shelter.id, puppy_id=puppy.id) }}>edit</a>
+    <a href={{ url_for('delete_puppy', shelter_id=shelter.id, puppy_id=puppy.id) }}>delete</a>
 
-<!-- <p> {{puppy.age}} </p> -->
-
-<p>{{puppy.gender}}</p>
-
-<p> {{puppy.adopted}}</p>
-
-<a href={{ url_for('edit_puppy', shelter_id=shelter.id, puppy_id=puppy.id) }}>edit</a>
-<a href={{ url_for('delete_puppy', shelter_id=shelter.id, puppy_id=puppy.id) }}>delete</a>
-
-</div>
-
+  </div>
 
 {% endfor %}
 
 </body>
-
 </html>
