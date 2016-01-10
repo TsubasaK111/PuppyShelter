@@ -166,7 +166,9 @@ def new_puppy(shelter_id):
     else:
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         output = render_template('page_head.html', title = "Add a New Puppy! :D")
-        output += render_template('new_puppy.html', shelter = shelter)
+        output += render_template( 'new_puppy.html',
+                                   shelter = shelter,
+                                   form = form )
         return output
 
 
