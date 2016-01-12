@@ -1,9 +1,7 @@
 from flask import render_template, url_for, request, redirect, flash, jsonify
 
 from puppies import app
-
 from puppies.models import session, Shelter, Puppy, Puppy_Profile, Adopter
-
 from puppies.forms import *
 
 from decimal import *
@@ -11,28 +9,23 @@ from decimal import *
 import pdb, pprint
 
 
-###############
-#shelters CRUD
-###############
-
-
 @app.route('/shelters/')
 def show_shelters():
-    output = render_template(
-                'page_head.html',
-                title = "California State Puppy Shelter Directory",
-                form = 0 )
+    output = render_template( 'page_head.html',
+                              title = "California State Puppy Shelters",
+                              form = 0 )
     shelters = session.query(Shelter).all()
     output += render_template('show_shelters.html', shelters=shelters)
     return output
 
+
 @app.route('/shelters/new/', methods=['GET', 'POST'])
 def new_shelter():
-    """page to create a new menu item."""
-    form = NewShelterForm(request.form)
+    """page to create a new shelter."""
+    form = ShelterForm(request.form)
     if request.method == "POST":
         new_shelter = Shelter()
-        form.populate_obj(new_shelter)
+        focrm.populate_obj(new_shelter)
         session.add(new_shelter)
         session.commit()
         flash( "New shelter '" + new_shelter.name + "' added!")
@@ -51,7 +44,7 @@ def new_shelter():
 def edit_shelter(shelter_id):
     """page to edit a shelter's basic information."""
     shelter = session.query(Shelter).filter_by(id=shelter_id).first()
-    form = NewShelterForm( request.form, shelter )
+    form = ShelterForm( request.form, shelter )
     if request.method == "POST":
         old_name = shelter.name
         form.populate_obj(shelter)
@@ -73,7 +66,7 @@ def edit_shelter(shelter_id):
 def delete_shelter(shelter_id):
     """page to delete a puppy."""
     shelter = session.query(Shelter).filter_by(id=shelter_id).first()
-    form = NewShelterForm( request.form, shelter )
+    form = ShelterForm( request.form, shelter )
     if request.method == "POST":
         session.delete(shelter)
         session.commit()

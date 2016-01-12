@@ -1,5 +1,5 @@
 <form method="POST" action = {{ url_for('edit_shelter', shelter_id=form.id.data ) }}>
-  <div>{{ form.name.label }}: {{ form.name(placeholder=form.name.data) }}</div>
+  <div>{{ form.name.label }}: {{ form.name(placeholder = form.name.data) }}</div>
   <div><input type = 'submit' value = 'Rename'></div>
 </form>
 

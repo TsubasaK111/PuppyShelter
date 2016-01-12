@@ -1,12 +1,8 @@
 from flask import render_template, url_for, request, redirect, flash, jsonify
 
 from puppies import app
-
 from puppies.models import session, Shelter, Puppy, Puppy_Profile, Adopter
-
 from puppies.forms import *
-
-from decimal import *
 
 import pdb, pprint
 

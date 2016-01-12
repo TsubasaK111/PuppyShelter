@@ -1,19 +1,13 @@
 from flask import render_template, url_for, request, redirect, flash, jsonify
 
 from puppies import app
-
 from puppies.models import session, Shelter, Puppy, Puppy_Profile, Adopter
-
 from puppies.forms import *
 
 from decimal import *
 
 import pdb, pprint
 
-
-###############
-#puppies CRUD
-###############
 
 @app.route('/shelters/<int:shelter_id>/')
 def show_puppies(shelter_id):
@@ -29,10 +23,24 @@ def show_puppies(shelter_id):
     return output
 
 
+@app.route('/adopters/<int:adopter_id>/')
+def show_puppies_by_adopter(adopter_id):
+    adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+    puppies = session.query(Puppy).filter_by(adopter_id = adopter_id)
+
+    output = render_template( 'page_head.html',
+                              title = "The Puppies of "+adopter.name,
+                              form = 0 )
+    output += render_template( 'show_puppies_by_adopter.html',
+                               adopter=adopter,
+                               puppies=puppies )
+    return output
+
+
 @app.route('/shelters/<int:shelter_id>/new/', methods=['GET', 'POST'])
 def new_puppy(shelter_id):
     """page to create a new menu item."""
-    form = NewPuppyForm(request.form)
+    form = PuppyForm(request.form)
     if request.method == "POST" and form.validate():
         new_name = request.form['name']
         shelter = session.query(Shelter).filter_by(id = shelter_id).first()
@@ -56,6 +64,43 @@ def new_puppy(shelter_id):
         output += render_template( 'new_puppy.html',
                                    shelter = shelter,
                                    form = form )
+        return output
+
+
+@app.route('/adopters/<int:adopter_id>/adopt/', methods=['GET', 'POST'])
+def adopt_puppy(adopter_id):
+    """page to adopt puppies, accessed from the Adopter directory."""
+
+    if request.method == "POST":
+        adopt_this_puppy_id = request.form["adopt_this_puppy_id"]
+        adopt_this_puppy_name = session.query(Puppy).\
+                                filter_by(id = adopt_this_puppy_id).first().name
+        result = session.execute("""
+            UPDATE puppy
+            SET adopter_id = :adopter_id,
+                shelter_id = NULL
+            WHERE id = :adopt_this_puppy_id
+        """,
+        { "adopter_id": adopter_id,
+          "adopt_this_puppy_id": adopt_this_puppy_id }
+        )
+        session.commit()
+        flash("Puppy '" + adopt_this_puppy_name + "' adopted! Congrats!")
+        return redirect(url_for("adopt_puppy", adopter_id = adopter_id))
+
+    if request.method == "GET":
+        output = render_template('page_head.html', title = "Adopt a Puppy!!!", form = 0)
+        adopter = session.query(Adopter).filter_by(id = adopter_id).first()
+        puppies = session.execute("""
+                SELECT *
+                FROM puppy
+                WHERE adopter_id ISNULL
+            """)
+        # print "puppies length is: ", len(puppies)
+        flash("Please select a puppy to adopt.")
+        output += render_template( 'adopt_puppy.html',
+                                   adopter=adopter,
+                                   puppies=puppies )
         return output
 
 

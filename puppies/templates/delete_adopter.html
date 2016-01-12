@@ -1,8 +1,6 @@
-<h1>Delete a Adopter</h1>
-
-<form action = {{ url_for('delete_adopter',adopter_id=adopter.id) }} method = 'POST' enctype = 'multipart/form-data' >
-    <p> Are you sure you want to delete {{adopter.name}}?</p>
-    <input type = 'submit' value = 'Delete'>
+<form method = 'POST' action = {{ url_for('delete_adopter', adopter_id = form.id.data) }}>
+    <p> Are you sure you want to delete {{form.name.data}}?</p>
+    <input type = 'submit' value = 'Delete {{form.name.data}}'>
 </form>
 
 <a href={{ url_for('show_adopters') }} >return to listing</a>

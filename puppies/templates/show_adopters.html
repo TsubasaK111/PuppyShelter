@@ -3,7 +3,6 @@
 </h3>
 
 {% for adopter in adopters %}
-
   <h1>
     <a href={{ url_for('show_puppies_by_adopter', adopter_id=adopter.id) }}>{{adopter.name}}</a>
   </h1>
@@ -16,9 +15,7 @@
 
   <a href={{ url_for('edit_adopter', adopter_id=adopter.id) }}>edit</a>
   <a href={{ url_for('delete_adopter', adopter_id=adopter.id) }}>delete</a>
-
 {% endfor %}
 
 </body>
-
 </html>

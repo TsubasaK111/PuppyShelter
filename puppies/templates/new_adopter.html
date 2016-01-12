@@ -1,11 +1,9 @@
-<h1>Add a new adopter to the great state of California adopter's directory!</h1>
-
-<form action = {{ url_for('new_adopter') }} method = "POST" enctype = "multipart/form-data">
-  <input name = 'new_name' type = 'text' >
-  <input type = 'submit' value = 'Create'>
+<form method = "POST" action = {{ url_for('new_adopter') }}>
+  <div>{{ form.name.label }}: {{ form.name() }}</div>
+  <div><input type = 'submit' value = 'Create'></div>
 </form>
 
-<a href={{ url_for('show_adopters') }} >return to listing</a>
+<a href={{ url_for('show_adopters') }} >return to adopter listing</a>
 
 </body>
 </html>

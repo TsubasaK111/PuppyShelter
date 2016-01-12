@@ -1,6 +1,6 @@
 from wtforms import Form, BooleanField, StringField, DateField, IntegerField, DecimalField, validators
 
-class NewPuppyForm(Form):
+class PuppyForm(Form):
     name = StringField( "Name",
                         [ validators.InputRequired(),
                           validators.Length(min=2, max=50) ])
@@ -13,7 +13,13 @@ class NewPuppyForm(Form):
                                [validators.InputRequired()])
 
 
-class NewShelterForm(Form):
+class ShelterForm(Form):
     name = StringField( "Shelter Name", [ validators.InputRequired(),
                                           validators.Length(min=10, max=50) ])
     id = IntegerField( "Shelter ID" )
+
+
+class AdopterForm(Form):
+    name = StringField( "Adopter Name", [ validators.InputRequired(),
+                                          validators.Length(min=10, max=50) ])
+    id = IntegerField( "Adopter ID" )
