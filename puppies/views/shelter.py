@@ -25,7 +25,7 @@ def new_shelter():
     form = ShelterForm(request.form)
     if request.method == "POST":
         new_shelter = Shelter()
-        focrm.populate_obj(new_shelter)
+        form.populate_obj(new_shelter)
         session.add(new_shelter)
         session.commit()
         flash( "New shelter '" + new_shelter.name + "' added!")
