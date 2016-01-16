@@ -6,7 +6,9 @@ from puppies.forms import *
 
 from decimal import *
 
-import pdb, pprint
+import pprint, pdb, logging
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/shelters/<int:shelter_id>/')
@@ -41,9 +43,9 @@ def show_puppies_by_adopter(adopter_id):
 def new_puppy(shelter_id):
     """page to create a new menu item."""
     form = PuppyForm(request.form)
+    shelter = session.query(Shelter).filter_by(id = shelter_id).first()
+    pdb.set_trace()
     if request.method == "POST" and form.validate():
-        new_name = request.form['name']
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         if (shelter.maximum_capacity - shelter.current_occupancy) <= 0:
             flash( """
                 '{shelter_name}' is full, and the puppy
@@ -51,15 +53,13 @@ def new_puppy(shelter_id):
                 """.format(shelter_name=shelter.name, new_name=new_name))
             return redirect(url_for("show_puppies", shelter_id=shelter.id))
         else:
-            new_puppy = Puppy( name=new_name )
+            new_puppy = Puppy()
             form.populate_obj(new_puppy)
             session.add(new_puppy)
             session.commit()
-            flash( "new puppy '" + new_name + "' added!")
+            flash( "new puppy '" + new_puppy.name + "' added!")
             return redirect(url_for("show_puppies", shelter_id=shelter.id))
-
     else:
-        shelter = session.query(Shelter).filter_by(id = shelter_id).first()
         output = render_template('page_head.html', title = "Add a New Puppy! :D", form = 0)
         output += render_template( 'new_puppy.html',
                                    shelter = shelter,
@@ -96,7 +96,7 @@ def adopt_puppy(adopter_id):
                 FROM puppy
                 WHERE adopter_id ISNULL
             """)
-        # print "puppies length is: ", len(puppies)
+        logging.debug( "puppies length is: ", len(puppies) )
         flash("Please select a puppy to adopt.")
         output += render_template( 'adopt_puppy.html',
                                    adopter=adopter,
@@ -126,7 +126,7 @@ def edit_puppy(shelter_id, puppy_id):
     else:
         output = render_template('page_head.html', title = "The Menu Manager", form = 0)
         puppy = session.query(Puppy).filter_by(id = puppy_id).first()
-        print "shelter_id is: ", shelter_id
+        logging.info( "shelter_id is: ", shelter_id )
         if shelter_id == "n":
             shelter = session.query(Shelter).filter_by(id = puppy.shelter_id).first()
         else:

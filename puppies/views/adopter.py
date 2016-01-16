@@ -6,7 +6,9 @@ from puppies.forms import *
 
 from decimal import *
 
-import pdb, pprint
+import pprint, pdb, logging
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/adopters/')

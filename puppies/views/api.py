@@ -6,8 +6,7 @@ from puppies.forms import *
 
 import pdb, pprint
 
-
-#Attempt at an API endpoint (GET Req)
+#GET Req API endpoint
 @app.route('/shelters/<int:shelter_id>/menu/<int:puppy_id>/JSON/')
 def puppyJSON(shelter_id, puppy_id):
     shelter = session.query(Shelter).filter_by(id = shelter_id).one()
@@ -15,7 +14,7 @@ def puppyJSON(shelter_id, puppy_id):
     return jsonify(Puppy = puppy.serialize)
 
 
-#Attempt at an API endpoint (GET Req)
+#GET Req API endpoint
 @app.route('/shelters/<int:shelter_id>/menu/JSON/')
 def show_puppies_JSON(shelter_id):
     shelter = session.query(Shelter).filter_by(id = shelter_id).one()

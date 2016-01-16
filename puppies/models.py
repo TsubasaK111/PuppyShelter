@@ -9,9 +9,9 @@ from sqlalchemy.sql import select, text
 from sqlalchemy import event
 from sqlalchemy.orm import sessionmaker
 
-import pprint
-import pdb
-import logging
+import pprint, pdb, logging
+
+logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 

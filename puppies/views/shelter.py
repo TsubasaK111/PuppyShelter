@@ -6,7 +6,9 @@ from puppies.forms import *
 
 from decimal import *
 
-import pdb, pprint
+import pprint, pdb, logging
+
+logger = logging.getLogger(__name__)
 
 
 @app.route('/shelters/')
@@ -23,7 +25,7 @@ def show_shelters():
 def new_shelter():
     """page to create a new shelter."""
     form = ShelterForm(request.form)
-    if request.method == "POST":
+    if request.method == "POST" and form.validate():
         new_shelter = Shelter()
         form.populate_obj(new_shelter)
         session.add(new_shelter)

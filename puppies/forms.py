@@ -5,7 +5,7 @@ class PuppyForm(Form):
                         [ validators.InputRequired(),
                           validators.Length(min=2, max=50) ])
     gender = StringField("Gender", [validators.Length(min=4, max=7)])
-    weight = DecimalField("Weight")
+    weight = StringField("Weight")
     dateOfBirth = DateField("Date of Birth", format='%m/%d/%y')
     # shelter = StringField( "Sheltered in:",
     #                        [validators.InputRequired()] )
