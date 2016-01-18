@@ -2,9 +2,6 @@
  My version of Udacity's Full Stack Foundations "Puppy Shelter" Exercise.
 
 
-
-
-
 ##Installation:
  1. **Install all requirements.**
  2. Download the contents of this repo.
@@ -28,11 +25,12 @@ and `vagrant up`.)
 ##Issues:
  n/a
 
-###Todo:
- * Create an installer script
- * Add logging features
- * Integrate OAuth
- * Incorporate unit testing 
+###Todo (in order of importance):
+ 1. Change "weight" form model and model type to Decimal, somehow!
+ 2. Elegantly fail when puppies are over capacity
+ 3. Integrate OAuth
+ 4. Incorporate unit testing
+ 5. Create an installer script
 
 ##License:
 This repo is distributed under the <a href="http://opensource.org/licenses/MIT">MIT License</a>.
