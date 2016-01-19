@@ -13,7 +13,7 @@ session = DatabaseSession()
 
 
 def alphabeticalPuppies():
-    """1. Query all of the puppies and return the results in ascending alphabetical order"""
+    """1. Query puppies and return results in ascending alphabetical order"""
 
     print "\n Puppies in alphabetical order:"
 
@@ -23,7 +23,7 @@ def alphabeticalPuppies():
 
 
 def youngPups():
-    """2. Query all of the puppies that are less than 6 months old organized by the youngest first"""
+    """2. Query all puppies less than 6 months old ordered by youngest first"""
 
     print "\n Puppies less than 6 months old:"
 
