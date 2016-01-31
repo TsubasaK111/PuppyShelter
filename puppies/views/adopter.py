@@ -1,12 +1,16 @@
+# Webserver Dependencies
 from flask import render_template, url_for, request, redirect, flash, jsonify
 
 from puppies import app
+
+# Database Dependencies
 from puppies.models import session, Shelter, Puppy, Puppy_Profile, Adopter
 from puppies.forms import *
 
-from decimal import *
-
+# Debugging Dependencies
 import pprint, pdb, logging
+
+from decimal import *
 
 logger = logging.getLogger(__name__)
 
